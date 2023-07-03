@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicLong;
 @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class IdGeneratorImpl implements IdGenerator {
     private final AtomicLong currentId = new AtomicLong(0);
+
     @Override
     public Long nextId() {
         return currentId.incrementAndGet();

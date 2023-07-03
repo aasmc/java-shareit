@@ -1,7 +1,7 @@
 package ru.practicum.shareit.util;
 
-public interface Mapper <Domain, Dto> {
-    Dto mapToDto(Domain domain);
+public interface Mapper<D, T> {
+    T mapToDto(D domain);
 
-    Domain mapToDomain(Dto dto);
+    D mapToDomain(T dto);
 }
