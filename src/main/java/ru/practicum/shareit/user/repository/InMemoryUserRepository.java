@@ -10,12 +10,13 @@ import ru.practicum.shareit.util.IdGenerator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Repository
 @RequiredArgsConstructor
 public class InMemoryUserRepository implements UserRepository {
 
-    private final Map<Long, User> userMap;
+    private final Map<Long, User> userMap = new ConcurrentHashMap<>();
     private final IdGenerator idGenerator;
 
     @Override

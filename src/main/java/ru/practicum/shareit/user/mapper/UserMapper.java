@@ -6,7 +6,7 @@ import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.util.Mapper;
 
 @Component
-public class UserMapper implements Mapper<User, UserDto, Long> {
+public class UserMapper implements Mapper<User, UserDto> {
     @Override
     public UserDto mapToDto(User user) {
         return UserDto.builder()
@@ -17,9 +17,9 @@ public class UserMapper implements Mapper<User, UserDto, Long> {
     }
 
     @Override
-    public User mapToDomain(UserDto dto, Long domainId) {
+    public User mapToDomain(UserDto dto) {
         return User.builder()
-                .id(domainId)
+                .id(dto.getId())
                 .email(dto.getEmail())
                 .name(dto.getName())
                 .build();

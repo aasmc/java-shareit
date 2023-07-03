@@ -31,7 +31,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto create(UserDto dto) {
         validateEmail(dto);
-        User saved = userRepository.save(userMapper.mapToDomain(dto, null));
+        User saved = userRepository.save(userMapper.mapToDomain(dto));
         return userMapper.mapToDto(saved);
     }
 
