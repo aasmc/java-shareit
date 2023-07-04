@@ -24,6 +24,7 @@ public class ItemMapper implements Mapper<Item, ItemDto> {
                 .description(item.getDescription())
                 .id(item.getId())
                 .available(item.getAvailable())
+                .requestId(item.getRequest() != null ? item.getRequest().getId() : null)
                 .build();
     }
 
@@ -40,6 +41,7 @@ public class ItemMapper implements Mapper<Item, ItemDto> {
                 .description(itemDto.getDescription())
                 .owner(owner)
                 .available(itemDto.getAvailable())
+                .request(null) // TODO fix, after implementing ItemRequest logic
                 .build();
     }
 }
