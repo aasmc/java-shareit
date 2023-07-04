@@ -17,6 +17,7 @@ import ru.practicum.shareit.util.Mapper;
 public class BookingMapper implements Mapper<Booking, BookingDto> {
     private final UserRepository userRepository;
     private final ItemRepository itemRepository;
+
     @Override
     public BookingDto mapToDto(Booking domain) {
         return BookingDto.builder()
