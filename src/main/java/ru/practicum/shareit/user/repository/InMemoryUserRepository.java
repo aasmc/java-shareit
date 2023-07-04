@@ -77,11 +77,12 @@ public class InMemoryUserRepository implements UserRepository {
         if (userOpt.isEmpty()) { // no User with such email in storage
             return true;
         } else { // there's user with such email
-            if (userId == null) { // when creating new User we have no id
+            if (userId == null) { // we are creating new user with email which is already present
                 return false;
             }
+            // we are updating an existing user, check if the user we are updating
+            // is the one with the same email. If so, ignore it.
             User user = userOpt.get();
-            // if current user has the same email, we ignore it
             return user.getId().equals(userId);
         }
     }

@@ -30,17 +30,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto create(UserDto dto) {
-        validateEmail(dto);
+        validateEmailUnique(dto.getEmail(), dto.getId());
         User saved = userRepository.save(userMapper.mapToDomain(dto));
         return userMapper.mapToDto(saved);
-    }
-
-    private void validateEmail(UserDto dto) {
-        if (dto.getEmail() == null) {
-            String msg = "User email cannot be null";
-            throw new ServiceException(HttpStatus.BAD_REQUEST.value(), msg);
-        }
-        validateEmailUnique(dto.getEmail(), dto.getId());
     }
 
     private void validateEmailUnique(String email, Long userId) {

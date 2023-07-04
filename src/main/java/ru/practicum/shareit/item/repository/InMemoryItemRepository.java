@@ -53,8 +53,7 @@ public class InMemoryItemRepository implements ItemRepository {
         }
     }
 
-    private void updateAvailable(Item toUpdate,
-                                 Boolean available) {
+    private void updateAvailable(Item toUpdate, Boolean available) {
         if (available != null) {
             toUpdate.setAvailable(available);
         }
