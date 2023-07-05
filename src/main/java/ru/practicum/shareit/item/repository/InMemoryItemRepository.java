@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.error.ServiceException;
+import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.util.IdGenerator;
 
@@ -28,46 +29,14 @@ public class InMemoryItemRepository implements ItemRepository {
 
     @Override
     public Item update(Long ownerId,
-                       Long itemId,
-                       Boolean available,
-                       String description,
-                       String name) {
+                       ItemDto patchDto) {
         Map<Long, Item> userItems = userToItemsMap.get(ownerId);
-        checkItemBelongsToUser(userItems, itemId, ownerId);
-        Item toUpdate = userItems.get(itemId);
-        updateAvailable(toUpdate, available);
-        updateDescription(toUpdate, description);
-        updateName(toUpdate, name);
+        checkItemBelongsToUser(userItems, patchDto.getId(), ownerId);
+        Item toUpdate = userItems.get(patchDto.getId());
+        updateAvailable(toUpdate, patchDto.getAvailable());
+        updateDescription(toUpdate, patchDto.getDescription());
+        updateName(toUpdate, patchDto.getName());
         return toUpdate;
-    }
-
-    private void updateName(Item toUpdate, String name) {
-        if (name != null) {
-            toUpdate.setName(name);
-        }
-    }
-
-    private void updateDescription(Item toUpdate, String description) {
-        if (description != null) {
-            toUpdate.setDescription(description);
-        }
-    }
-
-    private void updateAvailable(Item toUpdate, Boolean available) {
-        if (available != null) {
-            toUpdate.setAvailable(available);
-        }
-    }
-
-    private void checkItemBelongsToUser(Map<Long, Item> userItems, Long itemId, Long ownerId) {
-        if (userItems == null || !userItems.containsKey(itemId)) {
-            String msg = String.format(
-                    "Cannot update Item with id=%d because it doesn't belong to user with id=%d",
-                    itemId,
-                    ownerId
-            );
-            throw new ServiceException(HttpStatus.FORBIDDEN.value(), msg);
-        }
     }
 
     @Override
@@ -116,5 +85,34 @@ public class InMemoryItemRepository implements ItemRepository {
             throw new ServiceException(HttpStatus.FORBIDDEN.value(), msg);
         }
         itemMap.remove(itemId);
+    }
+
+    private void updateName(Item toUpdate, String name) {
+        if (name != null) {
+            toUpdate.setName(name);
+        }
+    }
+
+    private void updateDescription(Item toUpdate, String description) {
+        if (description != null) {
+            toUpdate.setDescription(description);
+        }
+    }
+
+    private void updateAvailable(Item toUpdate, Boolean available) {
+        if (available != null) {
+            toUpdate.setAvailable(available);
+        }
+    }
+
+    private void checkItemBelongsToUser(Map<Long, Item> userItems, Long itemId, Long ownerId) {
+        if (userItems == null || !userItems.containsKey(itemId)) {
+            String msg = String.format(
+                    "Cannot update Item with id=%d because it doesn't belong to user with id=%d",
+                    itemId,
+                    ownerId
+            );
+            throw new ServiceException(HttpStatus.FORBIDDEN.value(), msg);
+        }
     }
 }

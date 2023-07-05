@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.error.ServiceException;
+import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.util.IdGenerator;
 
@@ -37,31 +38,12 @@ public class InMemoryUserRepository implements UserRepository {
     }
 
     @Override
-    public User update(Long userId, String email, String name) {
-        User user = userMap.get(userId);
-        checkUserExists(user, userId);
-        updateEmail(user, email);
-        updateName(user, name);
+    public User update(UserDto dto) {
+        User user = userMap.get(dto.getId());
+        checkUserExists(user, dto.getId());
+        updateEmail(user, dto.getEmail());
+        updateName(user, dto.getName());
         return user;
-    }
-
-    private void updateName(User user, String name) {
-        if (null != name) {
-            user.setName(name);
-        }
-    }
-
-    private void updateEmail(User user, String email) {
-        if (null != email) {
-            user.setEmail(email);
-        }
-    }
-
-    private void checkUserExists(User user, Long userId) {
-        if (null == user) {
-            String msg = String.format("User with ID=%d not found.", userId);
-            throw new ServiceException(HttpStatus.NOT_FOUND.value(), msg);
-        }
     }
 
     @Override
@@ -84,6 +66,25 @@ public class InMemoryUserRepository implements UserRepository {
             // is the one with the same email. If so, ignore it.
             User user = userOpt.get();
             return user.getId().equals(userId);
+        }
+    }
+
+    private void updateName(User user, String name) {
+        if (null != name) {
+            user.setName(name);
+        }
+    }
+
+    private void updateEmail(User user, String email) {
+        if (null != email) {
+            user.setEmail(email);
+        }
+    }
+
+    private void checkUserExists(User user, Long userId) {
+        if (null == user) {
+            String msg = String.format("User with ID=%d not found.", userId);
+            throw new ServiceException(HttpStatus.NOT_FOUND.value(), msg);
         }
     }
 }

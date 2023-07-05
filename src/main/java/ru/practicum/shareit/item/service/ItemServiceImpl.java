@@ -32,11 +32,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto update(ItemDto patchDto, Long ownerId) {
-        Item updated = itemRepository.update(ownerId,
-                patchDto.getId(),
-                patchDto.getAvailable(),
-                patchDto.getDescription(),
-                patchDto.getName());
+        Item updated = itemRepository.update(ownerId, patchDto);
         return itemMapper.mapToDto(updated);
     }
 

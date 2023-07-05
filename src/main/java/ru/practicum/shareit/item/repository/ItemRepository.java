@@ -1,5 +1,6 @@
 package ru.practicum.shareit.item.repository;
 
+import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
 
 import java.util.List;
@@ -9,11 +10,7 @@ public interface ItemRepository {
 
     Optional<Item> findById(long itemId);
 
-    Item update(Long ownerId,
-                Long itemId,
-                Boolean available,
-                String description,
-                String name);
+    Item update(Long ownerId, ItemDto patchDto);
 
     Item save(Item item);
 

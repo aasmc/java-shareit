@@ -43,10 +43,6 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    private boolean isEmailUnique(String email, Long userId) {
-        return userRepository.isEmailUnique(email, userId);
-    }
-
     @Override
     public List<UserDto> getAllUsers() {
         return userRepository.findAll().stream()
@@ -57,7 +53,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto update(UserDto dto) {
         validateEmailUnique(dto.getEmail(), dto.getId());
-        User updated = userRepository.update(dto.getId(), dto.getEmail(), dto.getName());
+        User updated = userRepository.update(dto);
         return userMapper.mapToDto(updated);
     }
 
@@ -65,4 +61,9 @@ public class UserServiceImpl implements UserService {
     public void deleteById(long userId) {
         userRepository.deleteById(userId);
     }
+
+    private boolean isEmailUnique(String email, Long userId) {
+        return userRepository.isEmailUnique(email, userId);
+    }
+
 }
