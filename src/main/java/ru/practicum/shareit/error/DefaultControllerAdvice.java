@@ -12,9 +12,10 @@ public class DefaultControllerAdvice {
     public ResponseEntity<ErrorResponse> handleServiceException(ServiceException ex) {
         ErrorResponse response = ErrorResponse.builder()
                 .code(ex.getCode())
-                .message(ex.getMessage())
+                .error(ex.getMessage())
                 .build();
         return new ResponseEntity<>(response, HttpStatus.valueOf(ex.getCode()));
     }
+
 
 }

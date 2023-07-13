@@ -4,7 +4,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.item.dto.CommentRequest;
+import ru.practicum.shareit.item.dto.CommentResponse;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.service.CommentService;
 import ru.practicum.shareit.item.service.ItemService;
 
 import javax.validation.Valid;
@@ -18,9 +21,11 @@ import java.util.List;
 public class ItemController {
 
     private final ItemService itemService;
+    private final CommentService commentService;
+    private static final String USER_HEADER = "X-Sharer-User-Id";
 
     @PostMapping
-    public ResponseEntity<ItemDto> createItem(@RequestHeader(value = "X-Sharer-User-Id") Long userId,
+    public ResponseEntity<ItemDto> createItem(@RequestHeader(value = USER_HEADER) Long userId,
                                               @RequestBody @Valid ItemDto dto) {
         log.info(
                 "Received POST request to create Item {} by user with id = {}",
@@ -32,7 +37,7 @@ public class ItemController {
     }
 
     @PatchMapping("/{itemId}")
-    public ResponseEntity<ItemDto> updateItem(@RequestHeader(value = "X-Sharer-User-Id") Long userId,
+    public ResponseEntity<ItemDto> updateItem(@RequestHeader(value = USER_HEADER) Long userId,
                                               @RequestBody ItemDto dto,
                                               @PathVariable("itemId") Long itemId) {
         log.info(
@@ -45,9 +50,10 @@ public class ItemController {
     }
 
     @GetMapping("/{itemId}")
-    public ResponseEntity<ItemDto> getItemById(@PathVariable("itemId") Long itemId) {
+    public ResponseEntity<ItemDto> getItemById(@PathVariable("itemId") Long itemId,
+                                               @RequestHeader(USER_HEADER) Long userId) {
         log.info("Received request to GET Item by id = {}", itemId);
-        return ResponseEntity.ok(itemService.findById(itemId));
+        return ResponseEntity.ok(itemService.findById(itemId, userId));
     }
 
     @GetMapping
@@ -60,6 +66,20 @@ public class ItemController {
     public ResponseEntity<List<ItemDto>> searchItems(@RequestParam("text") String query) {
         log.info("Received GET request to search for items by query = {}", query);
         return ResponseEntity.ok(itemService.searchAvailableItems(query));
+    }
+
+    @PostMapping("/{itemId}/comment")
+    public ResponseEntity<CommentResponse> postComment(@PathVariable("itemId") Long itemId,
+                                                       @RequestHeader(USER_HEADER) Long userId,
+                                                       @RequestBody @Valid CommentRequest dto) {
+        log.info(
+                "Received POST request to create comment to item with ID={} by user with ID={}",
+                itemId,
+                userId
+        );
+        dto.setUserId(userId);
+        dto.setItemId(itemId);
+        return ResponseEntity.ok(commentService.saveComment(dto));
     }
 
 }

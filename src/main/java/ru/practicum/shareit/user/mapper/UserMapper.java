@@ -6,7 +6,7 @@ import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.util.Mapper;
 
 @Component
-public class UserMapper implements Mapper<User, UserDto> {
+public class UserMapper implements Mapper<User, UserDto, UserDto> {
     @Override
     public UserDto mapToDto(User user) {
         return UserDto.builder()

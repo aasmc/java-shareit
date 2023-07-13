@@ -4,16 +4,15 @@ import lombok.Builder;
 import lombok.Data;
 import ru.practicum.shareit.booking.model.BookingStatus;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
-// TODO add field validation after spec is available.
 @Data
 @Builder
-public class BookingDto {
+public class BookingResponse {
     private Long id;
-    private LocalDate start;
-    private LocalDate end;
-    private Long itemId;
-    private Long bookerId;
+    private LocalDateTime start;
+    private LocalDateTime end;
     private BookingStatus status;
+    private BookerResponse booker;
+    private ItemBookingResponse item;
 }

@@ -2,7 +2,6 @@ package ru.practicum.shareit.item.repository;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.error.ServiceException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
@@ -14,20 +13,17 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-@Repository
 @RequiredArgsConstructor
-public class InMemoryItemRepository implements ItemRepository {
+public class InMemoryItemRepository {
 
     private final Map<Long, Map<Long, Item>> userToItemsMap = new ConcurrentHashMap<>();
     private final Map<Long, Item> itemMap = new ConcurrentHashMap<>();
     private final IdGenerator idGenerator;
 
-    @Override
     public Optional<Item> findById(long itemId) {
         return Optional.ofNullable(itemMap.get(itemId));
     }
 
-    @Override
     public Item update(Long ownerId,
                        ItemDto patchDto) {
         Map<Long, Item> userItems = userToItemsMap.get(ownerId);
@@ -39,7 +35,6 @@ public class InMemoryItemRepository implements ItemRepository {
         return toUpdate;
     }
 
-    @Override
     public Item save(Item item) {
         item.setId(idGenerator.nextId());
         itemMap.put(item.getId(), item);
@@ -51,12 +46,10 @@ public class InMemoryItemRepository implements ItemRepository {
         return item;
     }
 
-    @Override
     public List<Item> getItemsForUser(long userId) {
         return List.copyOf(userToItemsMap.get(userId).values());
     }
 
-    @Override
     public List<Item> searchAvailableItems(String query) {
         return itemMap.values().stream()
                 .filter(Item::getAvailable)
@@ -65,13 +58,11 @@ public class InMemoryItemRepository implements ItemRepository {
                 .collect(Collectors.toList());
     }
 
-    @Override
     public void deleteItemsForUser(long userId) {
         userToItemsMap.remove(userId);
         itemMap.values().removeIf(i -> i.getOwner().getId().equals(userId));
     }
 
-    @Override
     public void deleteItem(long userId, long itemId) {
         Map<Long, Item> userItems = userToItemsMap.get(userId);
         if (userItems != null) {

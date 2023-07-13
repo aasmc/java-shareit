@@ -13,31 +13,26 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-@Repository
 @RequiredArgsConstructor
-public class InMemoryUserRepository implements UserRepository {
+public class InMemoryUserRepository {
 
     private final Map<Long, User> userMap = new ConcurrentHashMap<>();
     private final IdGenerator idGenerator;
 
-    @Override
     public Optional<User> findById(long userId) {
         return Optional.ofNullable(userMap.get(userId));
     }
 
-    @Override
     public User save(User user) {
         user.setId(idGenerator.nextId());
         userMap.put(user.getId(), user);
         return user;
     }
 
-    @Override
     public List<User> findAll() {
         return List.copyOf(userMap.values());
     }
 
-    @Override
     public User update(UserDto dto) {
         User user = userMap.get(dto.getId());
         checkUserExists(user, dto.getId());
@@ -46,12 +41,10 @@ public class InMemoryUserRepository implements UserRepository {
         return user;
     }
 
-    @Override
     public void deleteById(long userId) {
         userMap.remove(userId);
     }
 
-    @Override
     public boolean isEmailUnique(String email, Long userId) {
         Optional<User> userOpt = userMap.values().stream()
                 .filter(u -> u.getEmail().equals(email))

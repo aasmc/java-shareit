@@ -1,4 +1,4 @@
-package ru.practicum.shareit.request.model;
+package ru.practicum.shareit.item.model;
 
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -8,36 +8,40 @@ import ru.practicum.shareit.util.DateProcessor;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.Objects;
 
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 @ToString
 @Entity
-@Table(name = "item_requests")
-public class ItemRequest {
+@Table(name = "comments")
+public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(name = "description", nullable = false)
-    private String description;
+    @Column(name = "text", nullable = false, length = 2000)
+    private String text;
     @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "requestor_id", nullable = false)
-    private User requestor;
+    @JoinColumn(name = "item_id", nullable = false)
+    private Item item;
+    @ToString.Exclude
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "author_id", nullable = false)
+    private User author;
     @DateTimeFormat(pattern = DateProcessor.DATE_FORMAT)
     @CreationTimestamp
+    @Column(name = "created", updatable = false)
     private LocalDateTime created;
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof ItemRequest)) return false;
-        ItemRequest that = (ItemRequest) o;
-        return id != null && id.equals(that.getId());
+        if (!(o instanceof Comment)) return false;
+        Comment comment = (Comment) o;
+        return id != null && id.equals(comment.getId());
     }
 
     @Override
