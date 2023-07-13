@@ -1,16 +1,16 @@
-package ru.practicum.shareit.request.dto;
+package ru.practicum.shareit.request.model;
 
 import lombok.Builder;
 import lombok.Data;
+import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
 
-// TODO add field validation after spec is available.
 @Data
 @Builder
-public class ItemRequestDto {
+public class ItemRequest {
     private Long id;
     private String description;
-    private Long requestorId;
+    private User requestor;
     private LocalDateTime created;
 }
