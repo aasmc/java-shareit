@@ -25,7 +25,7 @@ import static ru.practicum.shareit.booking.model.BookingStatus.APPROVED;
 @RequiredArgsConstructor
 public class CommentMapper implements Mapper<Comment, CommentRequest, CommentResponse> {
 
-    private static final long CREATION_DELTA_MILLIS = 500L;
+    private static final long CREATION_DELTA_MILLIS = 1000L;
 
     private final UserRepository userRepository;
     private final ItemRepository itemRepository;

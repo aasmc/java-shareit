@@ -38,6 +38,7 @@ public class Item {
     @ToString.Exclude
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "item")
     private List<Booking> bookings = new ArrayList<>();
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
