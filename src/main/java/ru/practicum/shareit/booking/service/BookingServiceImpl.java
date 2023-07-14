@@ -79,7 +79,7 @@ public class BookingServiceImpl implements BookingService {
                 bookings = bookingRepository.findAllByBooker_IdOrderByStartDesc(bookerId);
                 break;
             case CURRENT:
-                bookings = bookingRepository.findAllByBooker_IdAndStartIsBeforeAndEndIsAfterOrderByStartAsc(bookerId, now, now);
+                bookings = bookingRepository.findAllByBooker_IdAndStartIsBeforeAndEndIsAfterOrderByStartDesc(bookerId, now, now);
                 break;
             case PAST:
                 bookings = bookingRepository.findAllByBooker_IdAndEndIsBeforeOrderByStartDesc(bookerId, now);
@@ -111,7 +111,7 @@ public class BookingServiceImpl implements BookingService {
                 bookings = bookingRepository.findAllByItem_Owner_IdOrderByStartDesc(ownerId);
                 break;
             case CURRENT:
-                bookings = bookingRepository.findAllByItem_Owner_IdAndStartIsBeforeAndEndIsAfterOrderByStartAsc(ownerId, now, now);
+                bookings = bookingRepository.findAllByItem_Owner_IdAndStartIsBeforeAndEndIsAfterOrderByStartDesc(ownerId, now, now);
                 break;
             case PAST:
                 bookings = bookingRepository.findAllByItem_Owner_IdAndEndIsBeforeOrderByStartDesc(ownerId, now);

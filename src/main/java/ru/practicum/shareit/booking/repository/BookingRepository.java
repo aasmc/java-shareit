@@ -30,10 +30,10 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     @Query("select b from Booking b join fetch b.item i " +
             "join fetch b.booker bkr where bkr.id = ?1 and " +
-            "b.start < ?2 and b.end > ?3 order by b.start asc")
-    List<Booking> findAllByBooker_IdAndStartIsBeforeAndEndIsAfterOrderByStartAsc(Long bookerId,
-                                                                                 LocalDateTime before,
-                                                                                 LocalDateTime after);
+            "b.start < ?2 and b.end > ?3 order by b.start desc")
+    List<Booking> findAllByBooker_IdAndStartIsBeforeAndEndIsAfterOrderByStartDesc(Long bookerId,
+                                                                                  LocalDateTime before,
+                                                                                  LocalDateTime after);
 
     @Query("select b from Booking b join fetch b.item i " +
             "join fetch b.booker bkr where bkr.id = ?1 and " +
@@ -58,10 +58,10 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     @Query("select b from Booking b join fetch b.item i " +
             "join fetch b.booker bkr where i.owner.id = ?1 " +
-            "and b.start < ?2 and b.end > ?3 order by b.start asc")
-    List<Booking> findAllByItem_Owner_IdAndStartIsBeforeAndEndIsAfterOrderByStartAsc(Long ownerId,
-                                                                                     LocalDateTime before,
-                                                                                     LocalDateTime after);
+            "and b.start < ?2 and b.end > ?3 order by b.start desc")
+    List<Booking> findAllByItem_Owner_IdAndStartIsBeforeAndEndIsAfterOrderByStartDesc(Long ownerId,
+                                                                                      LocalDateTime before,
+                                                                                      LocalDateTime after);
 
     @Query("select b from Booking b join fetch b.item i " +
             "join fetch b.booker bkr where i.owner.id = ?1 " +
