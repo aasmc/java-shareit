@@ -9,10 +9,8 @@ import ru.practicum.shareit.booking.dto.BookingResponse;
 import ru.practicum.shareit.booking.dto.ItemBookingResponse;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.error.ServiceException;
-import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
-import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 import ru.practicum.shareit.util.Mapper;
@@ -47,7 +45,7 @@ public class BookingMapper implements Mapper<Booking, BookingRequest, BookingRes
                     String msg = String.format("User with ID=%d not found.", dto.getBookerId());
                     return new ServiceException(HttpStatus.NOT_FOUND.value(), msg);
                 });
-        Item item = itemRepository.findById(dto.getItemId())
+        Item item = itemRepository.findByIdOwnerFetched(dto.getItemId())
                 .orElseThrow(() -> {
                    String msg = String.format("Item with ID=%d not found.", dto.getItemId());
                    return new ServiceException(HttpStatus.NOT_FOUND.value(), msg);

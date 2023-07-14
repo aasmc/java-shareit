@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.CommentRequest;
 import ru.practicum.shareit.item.dto.CommentResponse;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemShortDto;
 import ru.practicum.shareit.item.service.CommentService;
 import ru.practicum.shareit.item.service.ItemService;
 
@@ -25,7 +26,7 @@ public class ItemController {
     private static final String USER_HEADER = "X-Sharer-User-Id";
 
     @PostMapping
-    public ResponseEntity<ItemDto> createItem(@RequestHeader(value = USER_HEADER) Long userId,
+    public ResponseEntity<ItemShortDto> createItem(@RequestHeader(value = USER_HEADER) Long userId,
                                               @RequestBody @Valid ItemDto dto) {
         log.info(
                 "Received POST request to create Item {} by user with id = {}",
@@ -37,7 +38,7 @@ public class ItemController {
     }
 
     @PatchMapping("/{itemId}")
-    public ResponseEntity<ItemDto> updateItem(@RequestHeader(value = USER_HEADER) Long userId,
+    public ResponseEntity<ItemShortDto> updateItem(@RequestHeader(value = USER_HEADER) Long userId,
                                               @RequestBody ItemDto dto,
                                               @PathVariable("itemId") Long itemId) {
         log.info(
@@ -63,7 +64,7 @@ public class ItemController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<ItemDto>> searchItems(@RequestParam("text") String query) {
+    public ResponseEntity<List<ItemShortDto>> searchItems(@RequestParam("text") String query) {
         log.info("Received GET request to search for items by query = {}", query);
         return ResponseEntity.ok(itemService.searchAvailableItems(query));
     }

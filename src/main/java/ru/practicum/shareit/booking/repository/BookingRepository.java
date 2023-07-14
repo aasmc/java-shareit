@@ -15,33 +15,63 @@ import java.util.Optional;
 
 public interface BookingRepository extends JpaRepository<Booking, Long> {
 
+    @Query("select b from Booking b join fetch b.booker bkr join fetch b.item i where b.id =?1")
     Optional<Booking> findBookingById(Long bookingId);
 
+    @Query("select b from Booking b join fetch b.item i " +
+            "join fetch b.booker bkr where bkr.id = ?1 " +
+            "order by b.start desc")
     List<Booking> findAllByBooker_IdOrderByStartDesc(Long bookerId);
 
+    @Query("select b from Booking b join fetch b.item i " +
+            "join fetch b.booker bkr where bkr.id = ?1 and " +
+            "b.status = ?2 order by b.start desc")
     List<Booking> findAllByBooker_IdAndStatusEqualsOrderByStartDesc(Long bookerId, BookingStatus status);
 
+    @Query("select b from Booking b join fetch b.item i " +
+            "join fetch b.booker bkr where bkr.id = ?1 and " +
+            "b.start < ?2 and b.end > ?3 order by b.start asc")
     List<Booking> findAllByBooker_IdAndStartIsBeforeAndEndIsAfterOrderByStartAsc(Long bookerId,
                                                                                  LocalDateTime before,
                                                                                  LocalDateTime after);
 
+    @Query("select b from Booking b join fetch b.item i " +
+            "join fetch b.booker bkr where bkr.id = ?1 and " +
+            "b.end < ?2 order by b.start desc")
     List<Booking> findAllByBooker_IdAndEndIsBeforeOrderByStartDesc(Long bookerId, LocalDateTime now);
 
 
+    @Query("select b from Booking b join fetch b.item i " +
+            "join fetch b.booker bkr where bkr.id = ?1 and " +
+            "b.start > ?2 order by b.start desc")
     List<Booking> findAllByBooker_IdAndStartIsAfterOrderByStartDesc(Long bookerId, LocalDateTime now);
 
+    @Query("select b from Booking b join fetch b.item i " +
+            "join fetch b.booker bkr where i.owner.id = ?1 " +
+            "order by b.start desc")
     List<Booking> findAllByItem_Owner_IdOrderByStartDesc(Long ownerId);
 
-
+    @Query("select b from Booking b join fetch b.item i " +
+            "join fetch b.booker bkr where i.owner.id = ?1 " +
+            "and b.status = ?2 order by b.start desc")
     List<Booking> findAllByItem_Owner_IdAndStatusEqualsOrderByStartDesc(Long ownerId, BookingStatus status);
 
+    @Query("select b from Booking b join fetch b.item i " +
+            "join fetch b.booker bkr where i.owner.id = ?1 " +
+            "and b.start < ?2 and b.end > ?3 order by b.start asc")
     List<Booking> findAllByItem_Owner_IdAndStartIsBeforeAndEndIsAfterOrderByStartAsc(Long ownerId,
                                                                                      LocalDateTime before,
                                                                                      LocalDateTime after);
 
+    @Query("select b from Booking b join fetch b.item i " +
+            "join fetch b.booker bkr where i.owner.id = ?1 " +
+            "and b.end < ?2 order by b.start desc")
     List<Booking> findAllByItem_Owner_IdAndEndIsBeforeOrderByStartDesc(Long ownerId, LocalDateTime now);
 
 
+    @Query("select b from Booking b join fetch b.item i " +
+            "join fetch b.booker bkr where i.owner.id = ?1 " +
+            "and b.start > ?2 order by b.start desc")
     List<Booking> findAllByItem_Owner_IdAndStartIsAfterOrderByStartDesc(Long ownerId, LocalDateTime now);
 
     @Query("select new ru.practicum.shareit.booking.model.BookingView(b.id, b.booker.id) from Booking b " +

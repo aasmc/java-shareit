@@ -53,12 +53,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto update(UserDto dto) {
         User toUpdate = findByIdOrThrow(dto.getId());
-        if (dto.getEmail() != null) {
-            toUpdate.setEmail(dto.getEmail());
-        }
-        if (dto.getName() != null) {
-            toUpdate.setName(dto.getName());
-        }
+        updateEmail(dto, toUpdate);
+        updateName(dto, toUpdate);
         try {
             userRepository.save(toUpdate);
         } catch (DataIntegrityViolationException ex) {
@@ -79,6 +75,18 @@ public class UserServiceImpl implements UserService {
                     String msg = String.format("User with ID=%d not found", userId);
                     return new ServiceException(HttpStatus.NOT_FOUND.value(), msg);
                 });
+    }
+
+    private void updateName(UserDto dto, User toUpdate) {
+        if (dto.getName() != null) {
+            toUpdate.setName(dto.getName());
+        }
+    }
+
+    private void updateEmail(UserDto dto, User toUpdate) {
+        if (dto.getEmail() != null) {
+            toUpdate.setEmail(dto.getEmail());
+        }
     }
 
 }

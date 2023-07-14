@@ -10,6 +10,7 @@ import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.error.ServiceException;
 import ru.practicum.shareit.item.dto.BookingResponseDto;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemShortDto;
 import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
@@ -19,6 +20,8 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Service
@@ -39,7 +42,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public ItemDto update(ItemDto patchDto, Long ownerId) {
+    public ItemShortDto update(ItemDto patchDto, Long ownerId) {
         Item toUpdate = findItemByIdOrThrow(patchDto.getId());
         checkUserExists(ownerId);
         checkItemBelongsToUser(toUpdate, ownerId);
@@ -47,20 +50,20 @@ public class ItemServiceImpl implements ItemService {
         updateDescription(patchDto, toUpdate);
         updateName(patchDto, toUpdate);
         itemRepository.save(toUpdate);
-        return itemMapper.mapToDto(toUpdate);
+        return toItemShortDto(toUpdate);
     }
 
     @Override
-    public ItemDto saveItem(ItemDto dto) {
+    public ItemShortDto saveItem(ItemDto dto) {
         Item item = itemMapper.mapToDomain(dto);
         Item saved = itemRepository.save(item);
-        return itemMapper.mapToDto(saved);
+        return toItemShortDto(saved);
     }
 
     @Transactional(readOnly = true)
     @Override
     public List<ItemDto> getItemsForUser(long userId) {
-        return itemRepository.findAllByOwner_Id(userId)
+        return itemRepository.findAllByOwnerIdFetchBookings(userId)
                 .stream()
                 .map(i -> {
                     ItemDto dto = itemMapper.mapToDto(i);
@@ -70,48 +73,17 @@ public class ItemServiceImpl implements ItemService {
                 .collect(Collectors.toList());
     }
 
-    private void setBookings(ItemDto dto, Item item, Long userId) {
-        if (userId.equals(dto.getOwnerId())) {
-            LocalDateTime now = LocalDateTime.now();
-            List<Booking> bookings = item.getBookings();
-            bookings.stream()
-                    .sorted(Comparator.comparing(Booking::getStart))
-                    .filter(b -> b.getStart().isAfter(now)
-                            && (b.getStatus().equals(BookingStatus.WAITING)
-                            || b.getStatus().equals(BookingStatus.APPROVED)))
-                    .findFirst()
-                    .ifPresent(b -> {
-                        dto.setNextBooking(BookingResponseDto.builder()
-                                .id(b.getId())
-                                .bookerId(b.getBooker().getId())
-                                .build());
-                    });
-
-            bookings.stream()
-                    .sorted(Comparator.comparing(Booking::getStart).reversed())
-                    .filter(b -> (b.getEnd().isBefore(now) || (b.getEnd().isAfter(now) && b.getStart().isBefore(now)))
-                            && b.getStatus().equals(BookingStatus.APPROVED))
-                    .findFirst()
-                    .ifPresent(b -> {
-                        dto.setLastBooking(BookingResponseDto.builder()
-                                .id(b.getId())
-                                .bookerId(b.getBooker().getId())
-                                .build());
-                    });
-        }
-    }
-
     @Transactional(readOnly = true)
     @Override
-    public List<ItemDto> searchAvailableItems(String query) {
+    public List<ItemShortDto> searchAvailableItems(String query) {
         if (ObjectUtils.isEmpty(query)) {
             return Collections.emptyList();
         }
-        List<Item> items = itemRepository.searchAllByQuery(query);
+        List<Item> items = itemRepository.searchAllItemFetchOwnerByQuery(query);
 
         return items
                 .stream()
-                .map(itemMapper::mapToDto)
+                .map(this::toItemShortDto)
                 .collect(Collectors.toList());
     }
 
@@ -167,5 +139,60 @@ public class ItemServiceImpl implements ItemService {
             String msg = String.format("User with ID=%d not found.", ownerId);
             throw new ServiceException(HttpStatus.NOT_FOUND.value(), msg);
         }
+    }
+
+    private ItemShortDto toItemShortDto(Item item) {
+        return ItemShortDto.builder()
+                .id(item.getId())
+                .name(item.getName())
+                .description(item.getDescription())
+                .available(item.getAvailable())
+                .ownerId(item.getOwner().getId())
+                .build();
+    }
+
+    private void setBookings(ItemDto dto, Item item, Long userId) {
+        if (userId.equals(dto.getOwnerId())) {
+            LocalDateTime now = LocalDateTime.now();
+            List<Booking> bookings = item.getBookings();
+            bookings.stream()
+                    .filter(isActiveAfterNow(now))
+                    .min(Comparator.comparing(Booking::getStart))
+                    .ifPresent(addNextBooking(dto));
+
+            bookings.stream()
+                    .filter(isStartedAndApprovedBeforeNow(now))
+                    .max(Comparator.comparing(Booking::getStart))
+                    .ifPresent(addLastBookings(dto));
+        }
+    }
+
+    private Consumer<Booking> addLastBookings(ItemDto dto) {
+        return b -> {
+            dto.setLastBooking(BookingResponseDto.builder()
+                    .id(b.getId())
+                    .bookerId(b.getBooker().getId())
+                    .build());
+        };
+    }
+
+    private Predicate<Booking> isStartedAndApprovedBeforeNow(LocalDateTime now) {
+        return b -> (b.getEnd().isBefore(now) || (b.getEnd().isAfter(now) && b.getStart().isBefore(now)))
+                && b.getStatus().equals(BookingStatus.APPROVED);
+    }
+
+    private Consumer<Booking> addNextBooking(ItemDto dto) {
+        return b -> {
+            dto.setNextBooking(BookingResponseDto.builder()
+                    .id(b.getId())
+                    .bookerId(b.getBooker().getId())
+                    .build());
+        };
+    }
+
+    private Predicate<Booking> isActiveAfterNow(LocalDateTime now) {
+        return b -> b.getStart().isAfter(now)
+                && (b.getStatus().equals(BookingStatus.WAITING)
+                || b.getStatus().equals(BookingStatus.APPROVED));
     }
 }

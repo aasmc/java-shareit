@@ -38,37 +38,20 @@ public class BookingServiceImpl implements BookingService {
         return mapper.mapToDto(saved);
     }
 
-    private void checkUserNotOwner(BookingRequest dto, Booking booking) {
-        if (dto.getBookerId().equals(booking.getItem().getOwner().getId())) {
-            String msg = String.format("Cannot book item: {%s} for user with id=%d " +
-                    "because the user already owns the item.", booking, dto.getBookerId());
-            throw new ServiceException(HttpStatus.NOT_FOUND.value(), msg);
-        }
-    }
-
     @Override
     public BookingResponse updateApproved(Long ownerId, Long bookingId, boolean approved) {
         Booking booking = findBookingByIdOrThrow(bookingId);
         checkBookingOwner(ownerId, bookingId, booking);
         if (approved) {
-            if (booking.getStatus() == APPROVED) {
-                String msg = String.format("Cannot approve already approved Booking: %s " +
-                        "by owner with id = %d", booking, ownerId);
-                throw new ServiceException(HttpStatus.BAD_REQUEST.value(), msg);
-            }
+            checkAlreadyApproved(ownerId, booking);
             booking.setStatus(APPROVED);
         } else {
-            if (booking.getStatus() == REJECTED) {
-                String msg = String.format("Cannot reject already rejected Booking: {%s} " +
-                        "by owner with id = %d", booking, ownerId);
-                throw new ServiceException(HttpStatus.BAD_REQUEST.value(), msg);
-            }
+            checkAlreadyRejected(ownerId, booking);
             booking.setStatus(REJECTED);
         }
         bookingRepository.save(booking);
         return mapper.mapToDto(booking);
     }
-
 
     @Transactional(readOnly = true)
     @Override
@@ -184,4 +167,30 @@ public class BookingServiceImpl implements BookingService {
             throw new ServiceException(HttpStatus.NOT_FOUND.value(), msg);
         }
     }
+
+    private void checkUserNotOwner(BookingRequest dto, Booking booking) {
+        if (dto.getBookerId().equals(booking.getItem().getOwner().getId())) {
+            String msg = String.format("Cannot book item: {%s} for user with id=%d " +
+                    "because the user already owns the item.", booking, dto.getBookerId());
+            throw new ServiceException(HttpStatus.NOT_FOUND.value(), msg);
+        }
+    }
+
+    private void checkAlreadyRejected(Long ownerId, Booking booking) {
+        if (booking.getStatus() == REJECTED) {
+            String msg = String.format("Cannot reject already rejected Booking: {%s} " +
+                    "by owner with id = %d", booking, ownerId);
+            throw new ServiceException(HttpStatus.BAD_REQUEST.value(), msg);
+        }
+    }
+
+    private void checkAlreadyApproved(Long ownerId, Booking booking) {
+        if (booking.getStatus() == APPROVED) {
+            String msg = String.format("Cannot approve already approved Booking: %s " +
+                    "by owner with id = %d", booking, ownerId);
+            throw new ServiceException(HttpStatus.BAD_REQUEST.value(), msg);
+        }
+    }
+
+
 }
