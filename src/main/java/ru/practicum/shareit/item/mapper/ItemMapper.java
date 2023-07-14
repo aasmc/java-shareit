@@ -4,33 +4,20 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import ru.practicum.shareit.error.ServiceException;
-import ru.practicum.shareit.item.dto.CommentResponse;
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 import ru.practicum.shareit.util.Mapper;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
 public class ItemMapper implements Mapper<Item, ItemDto, ItemDto> {
 
     private final UserRepository userRepository;
-    private final CommentMapper commentMapper;
 
     @Override
     public ItemDto mapToDto(Item item) {
-        List<Comment> comments = item.getComments();
-        List<CommentResponse> commentResponses = null;
-        if (comments != null) {
-            commentResponses = comments.stream()
-                    .map(commentMapper::mapToDto)
-                    .collect(Collectors.toList());
-        }
         return ItemDto.builder()
                 .ownerId(item.getOwner().getId())
                 .name(item.getName())
@@ -38,7 +25,6 @@ public class ItemMapper implements Mapper<Item, ItemDto, ItemDto> {
                 .id(item.getId())
                 .available(item.getAvailable())
                 .requestId(item.getRequest() != null ? item.getRequest().getId() : null)
-                .comments(commentResponses)
                 .build();
     }
 

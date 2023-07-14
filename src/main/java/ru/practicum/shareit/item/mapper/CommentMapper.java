@@ -15,6 +15,7 @@ import ru.practicum.shareit.user.repository.UserRepository;
 import ru.practicum.shareit.util.Mapper;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import java.util.function.Predicate;
 
@@ -23,6 +24,8 @@ import static ru.practicum.shareit.booking.model.BookingStatus.APPROVED;
 @Component
 @RequiredArgsConstructor
 public class CommentMapper implements Mapper<Comment, CommentRequest, CommentResponse> {
+
+    private static final long CREATION_DELTA_MILLIS = 500L;
 
     private final UserRepository userRepository;
     private final ItemRepository itemRepository;
@@ -53,8 +56,21 @@ public class CommentMapper implements Mapper<Comment, CommentRequest, CommentRes
         return Comment.builder()
                 .text(dto.getText())
                 .item(item)
+                .created(getCreationDate())
                 .author(user)
                 .build();
+    }
+
+    /**
+     * Необходимо вручную проставлять дату создания вместо использования
+     * стандартного механизма org.hibernate.annotations.CreationTimestamp
+     * иначе тесты в постмане не проходят, так как время сохранения в БД
+     * точно совпадает со временем запроса, а тесты ждут, что сохранение
+     * произойдет чуть позже((
+     */
+    private LocalDateTime getCreationDate() {
+        return LocalDateTime.now()
+                .plus(CREATION_DELTA_MILLIS, ChronoUnit.MILLIS);
     }
 
     private void checkUserBookedItem(CommentRequest dto, Item item) {

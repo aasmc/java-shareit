@@ -9,6 +9,7 @@ import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.error.ServiceException;
 import ru.practicum.shareit.item.dto.BookingResponseDto;
+import ru.practicum.shareit.item.dto.CommentResponse;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemShortDto;
 import ru.practicum.shareit.item.mapper.ItemMapper;
@@ -20,7 +21,9 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -31,13 +34,15 @@ public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final ItemMapper itemMapper;
     private final UserRepository userRepository;
+    private final CommentService commentService;
 
     @Transactional(readOnly = true)
     @Override
     public ItemDto findById(Long itemId, Long userId) {
-        Item item = findItemByIdOrThrow(itemId);
+        Item item = findItemBookingsFetchedOrThrow(itemId);
         ItemDto dto = itemMapper.mapToDto(item);
         setBookings(dto, item, userId);
+        addCommentsToDtoFromDb(dto, itemId);
         return dto;
     }
 
@@ -63,14 +68,10 @@ public class ItemServiceImpl implements ItemService {
     @Transactional(readOnly = true)
     @Override
     public List<ItemDto> getItemsForUser(long userId) {
-        return itemRepository.findAllByOwnerIdFetchBookings(userId)
-                .stream()
-                .map(i -> {
-                    ItemDto dto = itemMapper.mapToDto(i);
-                    setBookings(dto, i, i.getOwner().getId());
-                    return dto;
-                })
-                .collect(Collectors.toList());
+        Map<Long, Item> idToItem = getItemsMapFetchedWithBookings(userId);
+        Map<Long, List<CommentResponse>> itemIdToComments =
+                commentService.getItemIdToComments(idToItem.keySet());
+        return createItemDtos(idToItem, itemIdToComments);
     }
 
     @Transactional(readOnly = true)
@@ -115,6 +116,14 @@ public class ItemServiceImpl implements ItemService {
         }
     }
 
+    private Item findItemBookingsFetchedOrThrow(Long itemId) {
+        return itemRepository.findItemByIdWithBookingsFetched(itemId)
+                .orElseThrow(() -> {
+                    String msg = String.format("Item with id=%d not found.", itemId);
+                    return new ServiceException(HttpStatus.NOT_FOUND.value(), msg);
+                });
+    }
+
     private Item findItemByIdOrThrow(Long itemId) {
         return itemRepository.findById(itemId)
                 .orElseThrow(() -> {
@@ -151,22 +160,6 @@ public class ItemServiceImpl implements ItemService {
                 .build();
     }
 
-    private void setBookings(ItemDto dto, Item item, Long userId) {
-        if (userId.equals(dto.getOwnerId())) {
-            LocalDateTime now = LocalDateTime.now();
-            List<Booking> bookings = item.getBookings();
-            bookings.stream()
-                    .filter(isActiveAfterNow(now))
-                    .min(Comparator.comparing(Booking::getStart))
-                    .ifPresent(addNextBooking(dto));
-
-            bookings.stream()
-                    .filter(isStartedAndApprovedBeforeNow(now))
-                    .max(Comparator.comparing(Booking::getStart))
-                    .ifPresent(addLastBookings(dto));
-        }
-    }
-
     private Consumer<Booking> addLastBookings(ItemDto dto) {
         return b -> {
             dto.setLastBooking(BookingResponseDto.builder()
@@ -194,5 +187,52 @@ public class ItemServiceImpl implements ItemService {
         return b -> b.getStart().isAfter(now)
                 && (b.getStatus().equals(BookingStatus.WAITING)
                 || b.getStatus().equals(BookingStatus.APPROVED));
+    }
+
+
+    private List<ItemDto> createItemDtos(Map<Long, Item> idToItem,
+                                         Map<Long, List<CommentResponse>> itemIdToComments) {
+        return idToItem.values().stream()
+                .map(i -> {
+                    ItemDto dto = itemMapper.mapToDto(i);
+                    setBookings(dto, i, i.getOwner().getId());
+                    addCommentsToDtoFromMem(dto, itemIdToComments);
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
+
+    private void setBookings(ItemDto dto, Item item, Long userId) {
+        if (userId.equals(dto.getOwnerId())) {
+            LocalDateTime now = LocalDateTime.now();
+            List<Booking> bookings = item.getBookings();
+            bookings.stream()
+                    .filter(isActiveAfterNow(now))
+                    .min(Comparator.comparing(Booking::getStart))
+                    .ifPresent(addNextBooking(dto));
+
+            bookings.stream()
+                    .filter(isStartedAndApprovedBeforeNow(now))
+                    .max(Comparator.comparing(Booking::getStart))
+                    .ifPresent(addLastBookings(dto));
+        }
+    }
+
+    private Map<Long, Item> getItemsMapFetchedWithBookings(long userId) {
+        return itemRepository.findAllByOwnerIdFetchBookings(userId)
+                .stream()
+                .collect(Collectors.toMap(Item::getId, Function.identity()));
+    }
+
+    private void addCommentsToDtoFromMem(ItemDto dto,
+                                         Map<Long, List<CommentResponse>> itemIdToComments) {
+        if (itemIdToComments.containsKey(dto.getId())) {
+            dto.setComments(itemIdToComments.get(dto.getId()));
+        }
+    }
+
+    private void addCommentsToDtoFromDb(ItemDto dto, Long itemId) {
+        List<CommentResponse> comments = commentService.getCommentsOfItem(itemId);
+        dto.setComments(comments);
     }
 }

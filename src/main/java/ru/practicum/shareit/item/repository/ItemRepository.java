@@ -10,11 +10,11 @@ import java.util.Optional;
 
 public interface ItemRepository extends JpaRepository<Item, Long> {
 
-    @Query("select i from Item i join fetch i.owner o where i.id = ?1")
-    Optional<Item> findByIdOwnerFetched(Long itemId);
+    @Query("select i from Item i join fetch i.owner o where i.id = :itemId")
+    Optional<Item> findByIdOwnerFetched(@Param("itemId") Long itemId);
 
-    @Query("select distinct i from Item i left join fetch i.bookings b where i.id = ?1")
-    Optional<Item> findItemByIdWithBookingsFetched(Long itemId);
+    @Query("select distinct i from Item i left join fetch i.bookings b where i.id = :itemId")
+    Optional<Item> findItemByIdWithBookingsFetched(@Param("itemId") Long itemId);
 
     @Query("select distinct i from Item i join fetch i.owner u left join fetch i.bookings b where u.id = :ownerId")
     List<Item> findAllByOwnerIdFetchBookings(@Param("ownerId") Long ownerId);

@@ -5,6 +5,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.model.BookingView;
@@ -15,72 +16,84 @@ import java.util.Optional;
 
 public interface BookingRepository extends JpaRepository<Booking, Long> {
 
-    @Query("select b from Booking b join fetch b.booker bkr join fetch b.item i where b.id =?1")
-    Optional<Booking> findBookingById(Long bookingId);
+    @Query("select b from Booking b join fetch b.booker bkr join fetch b.item i where b.id =:bookingId")
+    Optional<Booking> findBookingByIdItemFetched(@Param("bookingId") Long bookingId);
 
     @Query("select b from Booking b join fetch b.item i " +
-            "join fetch b.booker bkr where bkr.id = ?1 " +
+            "join fetch b.booker bkr where bkr.id = :bookerId " +
             "order by b.start desc")
-    List<Booking> findAllByBooker_IdOrderByStartDesc(Long bookerId);
+    List<Booking> findAllByBookerIdOrderByStartDesc(@Param("bookerId") Long bookerId);
 
     @Query("select b from Booking b join fetch b.item i " +
-            "join fetch b.booker bkr where bkr.id = ?1 and " +
-            "b.status = ?2 order by b.start desc")
-    List<Booking> findAllByBooker_IdAndStatusEqualsOrderByStartDesc(Long bookerId, BookingStatus status);
+            "join fetch b.booker bkr where bkr.id = :bookerId and " +
+            "b.status = :status order by b.start desc")
+    List<Booking> findAllByBookerIdAndStatusOrderByStartDesc(@Param("bookerId") Long bookerId,
+                                                             @Param("status") BookingStatus status);
 
     @Query("select b from Booking b join fetch b.item i " +
-            "join fetch b.booker bkr where bkr.id = ?1 and " +
-            "b.start < ?2 and b.end > ?3 order by b.start desc")
-    List<Booking> findAllByBooker_IdAndStartIsBeforeAndEndIsAfterOrderByStartDesc(Long bookerId,
-                                                                                  LocalDateTime before,
-                                                                                  LocalDateTime after);
+            "join fetch b.booker bkr where bkr.id = :bookerId and " +
+            "b.start < :before and b.end > :after order by b.start desc")
+    List<Booking> findAllByBookerIdAndStartBeforeAndEndAfterOrderByStartDesc(@Param("bookerId") Long bookerId,
+                                                                             @Param("before") LocalDateTime before,
+                                                                             @Param("after") LocalDateTime after);
 
     @Query("select b from Booking b join fetch b.item i " +
-            "join fetch b.booker bkr where bkr.id = ?1 and " +
-            "b.end < ?2 order by b.start desc")
-    List<Booking> findAllByBooker_IdAndEndIsBeforeOrderByStartDesc(Long bookerId, LocalDateTime now);
+            "join fetch b.booker bkr where bkr.id = :bookerId and " +
+            "b.end < :now order by b.start desc")
+    List<Booking> findAllByBookerIdAndEndBeforeOrderByStartDesc(@Param("bookerId") Long bookerId,
+                                                                @Param("now") LocalDateTime now);
 
 
     @Query("select b from Booking b join fetch b.item i " +
-            "join fetch b.booker bkr where bkr.id = ?1 and " +
-            "b.start > ?2 order by b.start desc")
-    List<Booking> findAllByBooker_IdAndStartIsAfterOrderByStartDesc(Long bookerId, LocalDateTime now);
+            "join fetch b.booker bkr where bkr.id = :bookerId and " +
+            "b.start > :now order by b.start desc")
+    List<Booking> findAllByBookerIdAndStartAfterOrderByStartDesc(@Param("bookerId") Long bookerId,
+                                                                 @Param("now") LocalDateTime now);
 
     @Query("select b from Booking b join fetch b.item i " +
-            "join fetch b.booker bkr where i.owner.id = ?1 " +
+            "join fetch b.booker bkr where i.owner.id = :ownerId " +
             "order by b.start desc")
-    List<Booking> findAllByItem_Owner_IdOrderByStartDesc(Long ownerId);
+    List<Booking> findAllByItemOwnerIdOrderByStartDesc(@Param("ownerId") Long ownerId);
 
     @Query("select b from Booking b join fetch b.item i " +
-            "join fetch b.booker bkr where i.owner.id = ?1 " +
-            "and b.status = ?2 order by b.start desc")
-    List<Booking> findAllByItem_Owner_IdAndStatusEqualsOrderByStartDesc(Long ownerId, BookingStatus status);
+            "join fetch b.booker bkr where i.owner.id = :ownerId " +
+            "and b.status = :status order by b.start desc")
+    List<Booking> findAllByItemOwnerIdAndStatusOrderByStartDesc(@Param("ownerId") Long ownerId,
+                                                                @Param("status") BookingStatus status);
 
     @Query("select b from Booking b join fetch b.item i " +
-            "join fetch b.booker bkr where i.owner.id = ?1 " +
-            "and b.start < ?2 and b.end > ?3 order by b.start desc")
-    List<Booking> findAllByItem_Owner_IdAndStartIsBeforeAndEndIsAfterOrderByStartDesc(Long ownerId,
-                                                                                      LocalDateTime before,
-                                                                                      LocalDateTime after);
+            "join fetch b.booker bkr where i.owner.id = :ownerId " +
+            "and b.start < :before and b.end > :after order by b.start desc")
+    List<Booking> findAllByItemOwnerIdAndStartBeforeAndEndAfterOrderByStartDesc(@Param("ownerId") Long ownerId,
+                                                                                @Param("before") LocalDateTime before,
+                                                                                @Param("after") LocalDateTime after);
 
     @Query("select b from Booking b join fetch b.item i " +
-            "join fetch b.booker bkr where i.owner.id = ?1 " +
-            "and b.end < ?2 order by b.start desc")
-    List<Booking> findAllByItem_Owner_IdAndEndIsBeforeOrderByStartDesc(Long ownerId, LocalDateTime now);
+            "join fetch b.booker bkr where i.owner.id = :ownerId " +
+            "and b.end < :now order by b.start desc")
+    List<Booking> findAllByItemOwnerIdAndEndBeforeOrderByStartDesc(@Param("ownerId") Long ownerId,
+                                                                   @Param("now") LocalDateTime now);
 
 
     @Query("select b from Booking b join fetch b.item i " +
-            "join fetch b.booker bkr where i.owner.id = ?1 " +
-            "and b.start > ?2 order by b.start desc")
-    List<Booking> findAllByItem_Owner_IdAndStartIsAfterOrderByStartDesc(Long ownerId, LocalDateTime now);
+            "join fetch b.booker bkr where i.owner.id = :ownerId " +
+            "and b.start > :now order by b.start desc")
+    List<Booking> findAllByItemOwnerIdAndStartAfterOrderByStartDesc(@Param("ownerId") Long ownerId,
+                                                                    @Param("now") LocalDateTime now);
 
     @Query("select new ru.practicum.shareit.booking.model.BookingView(b.id, b.booker.id) from Booking b " +
-            "where b.item.owner.id = ?1 and b.item.id = ?2 and b.end < ?3 order by b.end desc")
-    Page<BookingView> findLastBookings(Long ownerId, Long itemId, LocalDateTime now, Pageable pageable);
+            "where b.item.owner.id = :ownerId and b.item.id = :itemId and b.end < :now order by b.end desc")
+    Page<BookingView> findLastBookings(@Param("ownerId") Long ownerId,
+                                       @Param("itemId") Long itemId,
+                                       @Param("now") LocalDateTime now,
+                                       Pageable pageable);
 
     @Query("select new ru.practicum.shareit.booking.model.BookingView(b.id, b.booker.id) from Booking b " +
-            " where b.item.owner.id = ?1 and b.item.id = ?2 and b.start > ?3 order by b.start asc")
-    Page<BookingView> findNextBookings(Long ownerId, Long itemId, LocalDateTime now, Pageable pageable);
+            " where b.item.owner.id = :ownerId and b.item.id = :itemId and b.start > :now order by b.start asc")
+    Page<BookingView> findNextBookings(@Param("ownerId") Long ownerId,
+                                       @Param("itemId") Long itemId,
+                                       @Param("now") LocalDateTime now,
+                                       Pageable pageable);
 
     default Optional<BookingView> findLastBooking(Long ownerId, Long itemId, LocalDateTime now) {
         Page<BookingView> lastBookings = findLastBookings(ownerId, itemId, now, PageRequest.of(0, 1));

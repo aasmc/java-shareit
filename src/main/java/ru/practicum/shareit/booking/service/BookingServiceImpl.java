@@ -32,8 +32,8 @@ public class BookingServiceImpl implements BookingService {
     public BookingResponse createBooking(BookingRequest dto) {
         dto.setStatus(WAITING);
         Booking booking = mapper.mapToDomain(dto);
-        checkItemAvailable(dto, booking);
-        checkUserNotOwner(dto, booking);
+        checkItemAvailable(dto.getItemId(), booking);
+        checkUserNotOwner(dto.getBookerId(), booking);
         Booking saved = bookingRepository.save(booking);
         return mapper.mapToDto(saved);
     }
@@ -76,22 +76,22 @@ public class BookingServiceImpl implements BookingService {
         LocalDateTime now = LocalDateTime.now();
         switch (state) {
             case ALL:
-                bookings = bookingRepository.findAllByBooker_IdOrderByStartDesc(bookerId);
+                bookings = bookingRepository.findAllByBookerIdOrderByStartDesc(bookerId);
                 break;
             case CURRENT:
-                bookings = bookingRepository.findAllByBooker_IdAndStartIsBeforeAndEndIsAfterOrderByStartDesc(bookerId, now, now);
+                bookings = bookingRepository.findAllByBookerIdAndStartBeforeAndEndAfterOrderByStartDesc(bookerId, now, now);
                 break;
             case PAST:
-                bookings = bookingRepository.findAllByBooker_IdAndEndIsBeforeOrderByStartDesc(bookerId, now);
+                bookings = bookingRepository.findAllByBookerIdAndEndBeforeOrderByStartDesc(bookerId, now);
                 break;
             case FUTURE:
-                bookings = bookingRepository.findAllByBooker_IdAndStartIsAfterOrderByStartDesc(bookerId, now);
+                bookings = bookingRepository.findAllByBookerIdAndStartAfterOrderByStartDesc(bookerId, now);
                 break;
             case WAITING:
-                bookings = bookingRepository.findAllByBooker_IdAndStatusEqualsOrderByStartDesc(bookerId, WAITING);
+                bookings = bookingRepository.findAllByBookerIdAndStatusOrderByStartDesc(bookerId, WAITING);
                 break;
             case REJECTED:
-                bookings = bookingRepository.findAllByBooker_IdAndStatusEqualsOrderByStartDesc(bookerId, REJECTED);
+                bookings = bookingRepository.findAllByBookerIdAndStatusOrderByStartDesc(bookerId, REJECTED);
                 break;
             default:
                 String msg = String.format("Unknown state: %s", state);
@@ -108,22 +108,22 @@ public class BookingServiceImpl implements BookingService {
         LocalDateTime now = LocalDateTime.now();
         switch (state) {
             case ALL:
-                bookings = bookingRepository.findAllByItem_Owner_IdOrderByStartDesc(ownerId);
+                bookings = bookingRepository.findAllByItemOwnerIdOrderByStartDesc(ownerId);
                 break;
             case CURRENT:
-                bookings = bookingRepository.findAllByItem_Owner_IdAndStartIsBeforeAndEndIsAfterOrderByStartDesc(ownerId, now, now);
+                bookings = bookingRepository.findAllByItemOwnerIdAndStartBeforeAndEndAfterOrderByStartDesc(ownerId, now, now);
                 break;
             case PAST:
-                bookings = bookingRepository.findAllByItem_Owner_IdAndEndIsBeforeOrderByStartDesc(ownerId, now);
+                bookings = bookingRepository.findAllByItemOwnerIdAndEndBeforeOrderByStartDesc(ownerId, now);
                 break;
             case FUTURE:
-                bookings = bookingRepository.findAllByItem_Owner_IdAndStartIsAfterOrderByStartDesc(ownerId, now);
+                bookings = bookingRepository.findAllByItemOwnerIdAndStartAfterOrderByStartDesc(ownerId, now);
                 break;
             case WAITING:
-                bookings = bookingRepository.findAllByItem_Owner_IdAndStatusEqualsOrderByStartDesc(ownerId, WAITING);
+                bookings = bookingRepository.findAllByItemOwnerIdAndStatusOrderByStartDesc(ownerId, WAITING);
                 break;
             case REJECTED:
-                bookings = bookingRepository.findAllByItem_Owner_IdAndStatusEqualsOrderByStartDesc(ownerId, REJECTED);
+                bookings = bookingRepository.findAllByItemOwnerIdAndStatusOrderByStartDesc(ownerId, REJECTED);
                 break;
             default:
                 String msg = String.format("Unknown state: %s", state);
@@ -139,7 +139,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     private Booking findBookingByIdOrThrow(Long bookingId) {
-        return bookingRepository.findBookingById(bookingId)
+        return bookingRepository.findBookingByIdItemFetched(bookingId)
                 .orElseThrow(() -> {
                     String msg = String.format("Booking with ID=%d not found.", bookingId);
                     return new ServiceException(HttpStatus.NOT_FOUND.value(), msg);
@@ -154,9 +154,9 @@ public class BookingServiceImpl implements BookingService {
         }
     }
 
-    private void checkItemAvailable(BookingRequest dto, Booking booking) {
+    private void checkItemAvailable(Long itemId, Booking booking) {
         if (!booking.getItem().getAvailable()) {
-            String msg = String.format("Cannot book item with ID=%d because it is not available", dto.getItemId());
+            String msg = String.format("Cannot book item with ID=%d because it is not available", itemId);
             throw new ServiceException(HttpStatus.BAD_REQUEST.value(), msg);
         }
     }
@@ -168,10 +168,10 @@ public class BookingServiceImpl implements BookingService {
         }
     }
 
-    private void checkUserNotOwner(BookingRequest dto, Booking booking) {
-        if (dto.getBookerId().equals(booking.getItem().getOwner().getId())) {
+    private void checkUserNotOwner(Long bookerId, Booking booking) {
+        if (bookerId.equals(booking.getItem().getOwner().getId())) {
             String msg = String.format("Cannot book item: {%s} for user with id=%d " +
-                    "because the user already owns the item.", booking, dto.getBookerId());
+                    "because the user already owns the item.", booking, bookerId);
             throw new ServiceException(HttpStatus.NOT_FOUND.value(), msg);
         }
     }
@@ -191,6 +191,4 @@ public class BookingServiceImpl implements BookingService {
             throw new ServiceException(HttpStatus.BAD_REQUEST.value(), msg);
         }
     }
-
-
 }

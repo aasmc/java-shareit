@@ -1,7 +1,6 @@
 package ru.practicum.shareit.item.model;
 
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.format.annotation.DateTimeFormat;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.util.DateProcessor;
@@ -33,7 +32,6 @@ public class Comment {
     private User author;
     @DateTimeFormat(pattern = DateProcessor.DATE_FORMAT)
     @Column(name = "created", updatable = false)
-    @CreationTimestamp
     private LocalDateTime created;
 
     @Override

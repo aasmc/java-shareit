@@ -8,13 +8,10 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.error.ServiceException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.mapper.UserMapper;
-import ru.practicum.shareit.user.model.EmailView;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -53,15 +50,15 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto update(UserDto dto) {
         User toUpdate = findByIdOrThrow(dto.getId());
-        updateEmail(dto, toUpdate);
-        updateName(dto, toUpdate);
         try {
-            userRepository.save(toUpdate);
+            updateEmail(dto, toUpdate);
+            updateName(dto, toUpdate);
+            userRepository.saveAndFlush(toUpdate);
+            return userMapper.mapToDto(toUpdate);
         } catch (DataIntegrityViolationException ex) {
             String msg = "You have provided email that already exists. Please create new one.";
             throw new ServiceException(HttpStatus.CONFLICT.value(), msg);
         }
-        return userMapper.mapToDto(toUpdate);
     }
 
     @Override

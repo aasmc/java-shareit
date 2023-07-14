@@ -9,6 +9,11 @@ import ru.practicum.shareit.item.mapper.CommentMapper;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.repository.CommentRepository;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -21,5 +26,21 @@ public class CommentServiceImpl implements CommentService {
     public CommentResponse saveComment(CommentRequest commentRequest) {
         Comment saved = commentRepository.save(mapper.mapToDomain(commentRequest));
         return mapper.mapToDto(saved);
+    }
+
+    @Override
+    public List<CommentResponse> getCommentsOfItem(Long itemId) {
+        return commentRepository.findAllByItem_Id(itemId)
+                .stream()
+                .map(mapper::mapToDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Map<Long, List<CommentResponse>> getItemIdToComments(Set<Long> itemIds) {
+        return commentRepository.findAllByItem_IdIn(itemIds)
+                .stream()
+                .collect(Collectors.groupingBy(c -> c.getItem().getId(),
+                        Collectors.mapping(mapper::mapToDto, Collectors.toList())));
     }
 }
