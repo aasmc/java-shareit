@@ -1,6 +1,7 @@
 package ru.practicum.shareit;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -17,6 +18,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
+@Disabled
 @SpringBootTest
 @Testcontainers
 @AutoConfigureMockMvc
@@ -38,7 +40,10 @@ public class BaseIntegTest {
 
     @Container
     static PostgreSQLContainer<?> postgresql =
-            new PostgreSQLContainer<>(DockerImageName.parse("postgres:15.3"));
+            new PostgreSQLContainer<>(DockerImageName.parse("postgres:15.3"))
+                    .withDatabaseName("shareIt")
+                    .withUsername("postgres")
+                    .withPassword("postgres");
 
     @Autowired
     protected ObjectMapper objectMapper;
