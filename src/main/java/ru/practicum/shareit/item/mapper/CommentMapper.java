@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import ru.practicum.shareit.booking.model.Booking;
-import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.error.ServiceException;
 import ru.practicum.shareit.item.dto.CommentRequest;
 import ru.practicum.shareit.item.dto.CommentResponse;
@@ -17,6 +16,9 @@ import ru.practicum.shareit.util.Mapper;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.function.Predicate;
+
+import static ru.practicum.shareit.booking.model.BookingStatus.APPROVED;
 
 @Component
 @RequiredArgsConstructor
@@ -51,21 +53,25 @@ public class CommentMapper implements Mapper<Comment, CommentRequest, CommentRes
         return Comment.builder()
                 .text(dto.getText())
                 .item(item)
+                .created(LocalDateTime.now())
                 .author(user)
                 .build();
     }
 
     private void checkUserBookedItem(CommentRequest dto, Item item) {
-        LocalDateTime now = LocalDateTime.now();
         Optional<Booking> booking = item.getBookings().stream()
-                .filter(b -> b.getBooker().getId().equals(dto.getUserId())
-                        && b.getStatus().equals(BookingStatus.APPROVED)
-                        && b.getEnd().isBefore(now))
+                .filter(hasUserBookedAnItem(dto.getUserId()))
                 .findFirst();
         if (booking.isEmpty()) {
             String msg = String.format("User with ID=%d cannot post comment to item with ID=%d " +
                     "because the user never booked the item.", dto.getUserId(), dto.getItemId());
             throw new ServiceException(HttpStatus.BAD_REQUEST.value(), msg);
         }
+    }
+
+    private Predicate<Booking> hasUserBookedAnItem(Long userId) {
+        return b -> b.getBooker().getId().equals(userId)
+                && b.getStatus().equals(APPROVED)
+                && b.getEnd().isBefore(LocalDateTime.now());
     }
 }

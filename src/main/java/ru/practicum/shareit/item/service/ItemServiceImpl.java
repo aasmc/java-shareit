@@ -88,7 +88,7 @@ public class ItemServiceImpl implements ItemService {
                     });
 
             bookings.stream()
-                    .sorted(Comparator.comparing(Booking::getEnd))
+                    .sorted(Comparator.comparing(Booking::getStart).reversed())
                     .filter(b -> (b.getEnd().isBefore(now) || (b.getEnd().isAfter(now) && b.getStart().isBefore(now)))
                             && b.getStatus().equals(BookingStatus.APPROVED))
                     .findFirst()
