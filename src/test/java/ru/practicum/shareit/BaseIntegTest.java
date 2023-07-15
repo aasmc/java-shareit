@@ -1,6 +1,5 @@
 package ru.practicum.shareit;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -22,7 +21,7 @@ import ru.practicum.shareit.testutil.ShareItPostgresContainer;
 @SqlGroup(
         value = {
                 @Sql(
-                        scripts = "classpath:db/schema.sql",
+                        scripts = "classpath:schema.sql",
                         executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
                 ),
                 @Sql(
@@ -38,21 +37,11 @@ public class BaseIntegTest {
     static PostgreSQLContainer container = ShareItPostgresContainer.getInstance();
 
     @Autowired
-    protected ObjectMapper objectMapper;
-
-    @Autowired
     protected MockMvc mockMvc;
 
     @Autowired
     protected WebTestClient webTestClient;
 
-//    @DynamicPropertySource
-//    static void postgresqlProperties(DynamicPropertyRegistry registry) {
-//        registry.add("spring.datasource.url", postgresql::getJdbcUrl);
-//        registry.add("spring.datasource.username", postgresql::getUsername);
-//        registry.add("spring.datasource.password", postgresql::getPassword);
-//        registry.add("spring.datasource.hikari.connection-timeout", () -> 250);
-//    }
 
     @Test
     void contextLoads() {

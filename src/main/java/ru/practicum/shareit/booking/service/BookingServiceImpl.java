@@ -11,7 +11,6 @@ import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.error.ServiceException;
-import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -26,14 +25,14 @@ public class BookingServiceImpl implements BookingService {
 
     private final BookingRepository bookingRepository;
     private final BookingMapper mapper;
-    private final UserRepository userRepository;
+    private final BookingDataValidator bookingDataValidator;
 
     @Override
     public BookingResponse createBooking(BookingRequest dto) {
         dto.setStatus(WAITING);
         Booking booking = mapper.mapToDomain(dto);
-        checkItemAvailable(dto.getItemId(), booking);
-        checkUserNotOwner(dto.getBookerId(), booking);
+        bookingDataValidator.throwIfItemNotAvailable(dto.getItemId(), booking);
+        bookingDataValidator.throwIfBookerIsItemOwner(dto.getBookerId(), booking);
         Booking saved = bookingRepository.save(booking);
         return mapper.mapToDto(saved);
     }
@@ -41,12 +40,12 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public BookingResponse updateApproved(Long ownerId, Long bookingId, boolean approved) {
         Booking booking = findBookingByIdOrThrow(bookingId);
-        checkBookingOwner(ownerId, bookingId, booking);
+        bookingDataValidator.throwIfNotOwnerOfBooking(ownerId, bookingId, booking);
         if (approved) {
-            checkAlreadyApproved(ownerId, booking);
+            bookingDataValidator.throwIfBookingAlreadyApproved(ownerId, booking);
             booking.setStatus(APPROVED);
         } else {
-            checkAlreadyRejected(ownerId, booking);
+            bookingDataValidator.throwIfBookingAlreadyRejected(ownerId, booking);
             booking.setStatus(REJECTED);
         }
         bookingRepository.save(booking);
@@ -71,7 +70,7 @@ public class BookingServiceImpl implements BookingService {
     @Transactional(readOnly = true)
     @Override
     public List<BookingResponse> getAllBookingsOfUser(Long bookerId, BookingStateDto state) {
-        checkUserExists(bookerId);
+        bookingDataValidator.throwIfUserNotExists(bookerId);
         List<Booking> bookings;
         LocalDateTime now = LocalDateTime.now();
         switch (state) {
@@ -103,7 +102,7 @@ public class BookingServiceImpl implements BookingService {
     @Transactional(readOnly = true)
     @Override
     public List<BookingResponse> getAllBookingsOfOwner(Long ownerId, BookingStateDto state) {
-        checkUserExists(ownerId);
+        bookingDataValidator.throwIfUserNotExists(ownerId);
         List<Booking> bookings;
         LocalDateTime now = LocalDateTime.now();
         switch (state) {
@@ -144,51 +143,5 @@ public class BookingServiceImpl implements BookingService {
                     String msg = String.format("Booking with ID=%d not found.", bookingId);
                     return new ServiceException(HttpStatus.NOT_FOUND.value(), msg);
                 });
-    }
-
-    private void checkBookingOwner(Long ownerId, Long bookingId, Booking booking) {
-        if (!booking.getItem().getOwner().getId().equals(ownerId)) {
-            String msg = String.format("Status of booking with ID=%d cannot be updated because " +
-                    "user with ID=%d is not the owner of item.", bookingId, ownerId);
-            throw new ServiceException(HttpStatus.NOT_FOUND.value(), msg);
-        }
-    }
-
-    private void checkItemAvailable(Long itemId, Booking booking) {
-        if (!booking.getItem().getAvailable()) {
-            String msg = String.format("Cannot book item with ID=%d because it is not available", itemId);
-            throw new ServiceException(HttpStatus.BAD_REQUEST.value(), msg);
-        }
-    }
-
-    private void checkUserExists(Long bookerId) {
-        if (!userRepository.existsById(bookerId)) {
-            String msg = String.format("User with ID=%d not found.", bookerId);
-            throw new ServiceException(HttpStatus.NOT_FOUND.value(), msg);
-        }
-    }
-
-    private void checkUserNotOwner(Long bookerId, Booking booking) {
-        if (bookerId.equals(booking.getItem().getOwner().getId())) {
-            String msg = String.format("Cannot book item: {%s} for user with id=%d " +
-                    "because the user already owns the item.", booking, bookerId);
-            throw new ServiceException(HttpStatus.NOT_FOUND.value(), msg);
-        }
-    }
-
-    private void checkAlreadyRejected(Long ownerId, Booking booking) {
-        if (booking.getStatus() == REJECTED) {
-            String msg = String.format("Cannot reject already rejected Booking: {%s} " +
-                    "by owner with id = %d", booking, ownerId);
-            throw new ServiceException(HttpStatus.BAD_REQUEST.value(), msg);
-        }
-    }
-
-    private void checkAlreadyApproved(Long ownerId, Booking booking) {
-        if (booking.getStatus() == APPROVED) {
-            String msg = String.format("Cannot approve already approved Booking: %s " +
-                    "by owner with id = %d", booking, ownerId);
-            throw new ServiceException(HttpStatus.BAD_REQUEST.value(), msg);
-        }
     }
 }

@@ -11,7 +11,6 @@ import ru.practicum.shareit.error.ServiceException;
 import ru.practicum.shareit.item.dto.BookingResponseDto;
 import ru.practicum.shareit.item.dto.CommentResponse;
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.ItemShortDto;
 import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
@@ -47,22 +46,20 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public ItemShortDto update(ItemDto patchDto, Long ownerId) {
+    public ItemDto update(ItemDto patchDto, Long ownerId) {
         Item toUpdate = findItemByIdOrThrow(patchDto.getId());
         checkUserExists(ownerId);
         checkItemBelongsToUser(toUpdate, ownerId);
-        updateAvailable(patchDto, toUpdate);
-        updateDescription(patchDto, toUpdate);
-        updateName(patchDto, toUpdate);
+        updateItem(patchDto, toUpdate);
         itemRepository.save(toUpdate);
-        return toItemShortDto(toUpdate);
+        return toItemDto(toUpdate);
     }
 
     @Override
-    public ItemShortDto saveItem(ItemDto dto) {
+    public ItemDto saveItem(ItemDto dto) {
         Item item = itemMapper.mapToDomain(dto);
         Item saved = itemRepository.save(item);
-        return toItemShortDto(saved);
+        return toItemDto(saved);
     }
 
     @Transactional(readOnly = true)
@@ -76,7 +73,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<ItemShortDto> searchAvailableItems(String query) {
+    public List<ItemDto> searchAvailableItems(String query) {
         if (ObjectUtils.isEmpty(query)) {
             return Collections.emptyList();
         }
@@ -84,7 +81,7 @@ public class ItemServiceImpl implements ItemService {
 
         return items
                 .stream()
-                .map(this::toItemShortDto)
+                .map(this::toItemDto)
                 .collect(Collectors.toList());
     }
 
@@ -96,6 +93,12 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public void deleteItem(long userId, long itemId) {
         itemRepository.deleteItemByIdAndOwner_Id(userId, itemId);
+    }
+
+    private void updateItem(ItemDto patchDto, Item toUpdate) {
+        updateAvailable(patchDto, toUpdate);
+        updateDescription(patchDto, toUpdate);
+        updateName(patchDto, toUpdate);
     }
 
     private void updateName(ItemDto patchDto, Item toUpdate) {
@@ -150,8 +153,8 @@ public class ItemServiceImpl implements ItemService {
         }
     }
 
-    private ItemShortDto toItemShortDto(Item item) {
-        return ItemShortDto.builder()
+    private ItemDto toItemDto(Item item) {
+        return ItemDto.builder()
                 .id(item.getId())
                 .name(item.getName())
                 .description(item.getDescription())
