@@ -56,7 +56,7 @@ public class CommentMapper implements Mapper<Comment, CommentRequest, CommentRes
         return Comment.builder()
                 .text(dto.getText())
                 .item(item)
-//                .created(getCreationDate())
+                .created(getCreationDate())
                 .author(user)
                 .build();
     }
