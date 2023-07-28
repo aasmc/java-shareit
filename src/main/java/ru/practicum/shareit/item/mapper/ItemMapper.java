@@ -12,7 +12,7 @@ import ru.practicum.shareit.util.Mapper;
 
 @Component
 @RequiredArgsConstructor
-public class ItemMapper implements Mapper<Item, ItemDto> {
+public class ItemMapper implements Mapper<Item, ItemDto, ItemDto> {
 
     private final UserRepository userRepository;
 
@@ -35,6 +35,7 @@ public class ItemMapper implements Mapper<Item, ItemDto> {
                     String msg = String.format("User with ID=%d not found.", itemDto.getOwnerId());
                     return new ServiceException(HttpStatus.NOT_FOUND.value(), msg);
                 });
+
         return Item.builder()
                 .id(itemDto.getId())
                 .name(itemDto.getName())

@@ -5,7 +5,7 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import java.util.List;
 
 public interface ItemService {
-    ItemDto findById(long itemId);
+    ItemDto findById(Long itemId, Long userId);
 
     ItemDto update(ItemDto patchDto, Long ownerId);
 

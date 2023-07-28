@@ -12,7 +12,7 @@ import ru.practicum.shareit.util.Mapper;
 
 @Component
 @RequiredArgsConstructor
-public class ItemRequestMapper implements Mapper<ItemRequest, ItemRequestDto> {
+public class ItemRequestMapper implements Mapper<ItemRequest, ItemRequestDto, ItemRequestDto> {
 
     private final UserRepository userRepository;
 

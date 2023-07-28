@@ -1,24 +1,32 @@
 package ru.practicum.shareit.item.repository;
 
-import ru.practicum.shareit.item.dto.ItemDto;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import ru.practicum.shareit.item.model.Item;
 
 import java.util.List;
 import java.util.Optional;
 
-public interface ItemRepository {
+public interface ItemRepository extends JpaRepository<Item, Long> {
 
-    Optional<Item> findById(long itemId);
+    @Query("select i from Item i join fetch i.owner o where i.id = :itemId")
+    Optional<Item> findByIdOwnerFetched(@Param("itemId") Long itemId);
 
-    Item update(Long ownerId, ItemDto patchDto);
+    @Query("select distinct i from Item i left join fetch i.bookings b where i.id = :itemId")
+    Optional<Item> findItemByIdWithBookingsFetched(@Param("itemId") Long itemId);
 
-    Item save(Item item);
+    @Query("select distinct i from Item i join fetch i.owner u left join fetch i.bookings b where u.id = :ownerId")
+    List<Item> findAllByOwnerIdFetchBookings(@Param("ownerId") Long ownerId);
 
-    List<Item> getItemsForUser(long userId);
+    @Query("select i from Item i join fetch i.owner o " +
+            "where (upper(i.name) like upper(concat('%', ?1, '%')) " +
+            "or upper(i.description) like upper(concat('%', ?1, '%'))) " +
+            "and i.available = true")
+    List<Item> searchAllItemFetchOwnerByQuery(String query);
 
-    List<Item> searchAvailableItems(String query);
+    void deleteAllByOwner_Id(Long ownerId);
 
-    void deleteItemsForUser(long userId);
+    void deleteItemByIdAndOwner_Id(Long itemId, Long ownerId);
 
-    void deleteItem(long userId, long itemId);
 }
