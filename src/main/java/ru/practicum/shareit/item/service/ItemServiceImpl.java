@@ -154,12 +154,14 @@ public class ItemServiceImpl implements ItemService {
     }
 
     private ItemDto toItemDto(Item item) {
+
         return ItemDto.builder()
                 .id(item.getId())
                 .name(item.getName())
                 .description(item.getDescription())
                 .available(item.getAvailable())
                 .ownerId(item.getOwner().getId())
+                .requestId(item.getRequest() == null ? null : item.getRequest().getId())
                 .build();
     }
 

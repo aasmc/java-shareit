@@ -25,6 +25,8 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
             "and i.available = true")
     List<Item> searchAllItemFetchOwnerByQuery(String query);
 
+    List<Item> findAllByRequest_Id(Long requestId);
+
     void deleteAllByOwner_Id(Long ownerId);
 
     void deleteItemByIdAndOwner_Id(Long itemId, Long ownerId);
