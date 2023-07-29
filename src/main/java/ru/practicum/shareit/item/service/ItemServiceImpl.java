@@ -81,7 +81,7 @@ public class ItemServiceImpl implements ItemService {
             return Collections.emptyList();
         }
         Pageable pageable = new OffsetBasedPageRequest(from, size);
-        List<Item> items = itemRepository.searchAllItemFetchOwnerByQuery(query, pageable);
+        List<Item> items = itemRepository.searchAllAvailableItemsFetchOwnerByQuery(query, pageable);
         return items
                 .stream()
                 .map(this::toItemDto)

@@ -1,6 +1,7 @@
 package ru.practicum.shareit.request.model;
 
 import lombok.*;
+import lombok.experimental.Accessors;
 import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.format.annotation.DateTimeFormat;
 import ru.practicum.shareit.user.model.User;
@@ -17,6 +18,7 @@ import java.time.LocalDateTime;
 @ToString
 @Entity
 @Table(name = "item_requests")
+@Accessors(chain = true)
 public class ItemRequest {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

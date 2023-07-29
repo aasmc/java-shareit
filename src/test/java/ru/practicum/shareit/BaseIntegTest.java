@@ -6,7 +6,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.context.jdbc.SqlGroup;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -18,19 +17,10 @@ import ru.practicum.shareit.testutil.ShareItPostgresContainer;
 @Testcontainers
 @AutoConfigureMockMvc
 @ActiveProfiles("integtest")
-@SqlGroup(
-        value = {
-                @Sql(
-                        scripts = "classpath:schema.sql",
-                        executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
-                ),
-                @Sql(
-                        scripts = "classpath:db/clear-db.sql",
-                        executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD
-                )
-        }
+@Sql(
+        scripts = "classpath:db/clear-db.sql",
+        executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD
 )
-
 public class BaseIntegTest {
 
     @Container
@@ -41,7 +31,6 @@ public class BaseIntegTest {
 
     @Autowired
     protected WebTestClient webTestClient;
-
 
     @Test
     void contextLoads() {
