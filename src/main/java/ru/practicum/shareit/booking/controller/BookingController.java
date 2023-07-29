@@ -10,6 +10,7 @@ import ru.practicum.shareit.booking.dto.BookingStateDto;
 import ru.practicum.shareit.booking.service.BookingService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @Slf4j
@@ -58,27 +59,29 @@ public class BookingController {
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public List<BookingResponse> getBookingsOfUser(@RequestHeader(USER_HEADER) Long bookerId,
-                                                   @RequestParam(value = "state", required = false, defaultValue = "ALL")
-                                                   String state) {
+                                                   @RequestParam(value = "state", required = false, defaultValue = "ALL") String state,
+                                                   @RequestParam(value = "from", defaultValue = "0", required = false) @PositiveOrZero int from,
+                                                   @RequestParam(value = "size", defaultValue = "10", required = false) @PositiveOrZero int size) {
         log.info(
                 "Received request to GET all bookings of user with id={} in state={}",
                 bookerId,
                 state
         );
-        return bookingService.getAllBookingsOfUser(bookerId, BookingStateDto.fromString(state));
+        return bookingService.getAllBookingsOfUser(bookerId, BookingStateDto.fromString(state), from, size);
     }
 
     @GetMapping("/owner")
     @ResponseStatus(HttpStatus.OK)
     public List<BookingResponse> getBookingsOfOwner(@RequestHeader(USER_HEADER) Long ownerId,
-                                                    @RequestParam(value = "state", required = false, defaultValue = "ALL")
-                                                    String state) {
+                                                    @RequestParam(value = "state", required = false, defaultValue = "ALL") String state,
+                                                    @RequestParam(value = "from", defaultValue = "0", required = false) @PositiveOrZero int from,
+                                                    @RequestParam(value = "size", defaultValue = "10", required = false) @PositiveOrZero int size) {
         log.info(
                 "Received request to GET all bookings of owner with id={}, in state={}",
                 ownerId,
                 state
         );
-        return bookingService.getAllBookingsOfOwner(ownerId, BookingStateDto.fromString(state));
+        return bookingService.getAllBookingsOfOwner(ownerId, BookingStateDto.fromString(state), from, size);
     }
 
 }
