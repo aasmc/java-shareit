@@ -42,7 +42,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public BookingResponse updateApproved(Long ownerId, Long bookingId, boolean approved) {
         Booking booking = findBookingByIdOrThrow(bookingId);
-        bookingDataValidator.throwIfNotOwnerOfBooking(ownerId, bookingId, booking);
+        bookingDataValidator.throwIfNotOwnerOfBookedItem(ownerId, bookingId, booking);
         if (approved) {
             bookingDataValidator.throwIfBookingAlreadyApproved(ownerId, booking);
             booking.setStatus(APPROVED);

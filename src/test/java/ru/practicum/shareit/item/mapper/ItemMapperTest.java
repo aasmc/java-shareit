@@ -19,6 +19,8 @@ import java.util.Optional;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static ru.practicum.shareit.testutil.TestDataProvider.*;
+import static ru.practicum.shareit.testutil.TestConstants.*;
+
 
 @ExtendWith(MockitoExtension.class)
 class ItemMapperTest {

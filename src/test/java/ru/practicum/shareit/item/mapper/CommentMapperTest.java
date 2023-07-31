@@ -19,6 +19,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
+import static ru.practicum.shareit.testutil.TestConstants.*;
 import static ru.practicum.shareit.testutil.TestDataProvider.*;
 
 @ExtendWith(MockitoExtension.class)

@@ -1,5 +1,9 @@
 package ru.practicum.shareit.testutil;
 
+import ru.practicum.shareit.booking.dto.BookerResponse;
+import ru.practicum.shareit.booking.dto.BookingRequest;
+import ru.practicum.shareit.booking.dto.BookingResponse;
+import ru.practicum.shareit.booking.dto.ItemBookingResponse;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.item.dto.BookingResponseDto;
@@ -12,38 +16,64 @@ import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.Month;
 import java.util.List;
+
+import static ru.practicum.shareit.testutil.TestConstants.*;
 
 public class TestDataProvider {
 
-    public static final Long BOOKER_ID = 1L;
-    public static final Long BOOKING_ID = 2L;
-    public static final Long ITEM_ID = 3L;
-    public static final Long OWNER_ID = 4L;
-    public static final Long ITEM_REQUESTOR_ID = 5L;
-    public static final Long ITEM_REQUEST_ID = 6L;
-    public static final Long ITEM_DTO_ID = 7L;
+    public static BookingResponse fromBooking(Booking domain) {
+        return BookingResponse.builder()
+                .id(domain.getId())
+                .start(domain.getStart())
+                .end(domain.getEnd())
+                .status(domain.getStatus())
+                .booker(BookerResponse.builder()
+                        .id(domain.getBooker().getId())
+                        .build())
+                .item(ItemBookingResponse.builder()
+                        .id(domain.getItem().getId())
+                        .name(domain.getItem().getName())
+                        .build())
+                .build();
+    }
 
-    public static final LocalDateTime BOOKING_START = LocalDateTime.of(
-            LocalDate.of(2023, Month.JULY, 27),
-            LocalTime.of(12, 0)
-    );
+    public static Booking fromBookingRequest(BookingRequest req) {
+        Item item = getAvailableItemWithoutBookings();
+        item.setId(req.getItemId());
+        return Booking.builder()
+                .id(req.getId())
+                .start(req.getStart())
+                .end(req.getEnd())
+                .status(req.getStatus())
+                .booker(getMockUser(req.getBookerId()))
+                .item(item)
+                .build();
+    }
 
-    public static final LocalDateTime BOOKING_END = LocalDateTime.of(
-            LocalDate.of(2023, Month.JULY, 28),
-            LocalTime.of(12, 0)
-    );
+    public static BookingRequest getBookingRequestForCreate(LocalDateTime start,
+                                                            LocalDateTime end,
+                                                            Long itemId) {
+        return BookingRequest.builder()
+                .start(start)
+                .end(end)
+                .itemId(itemId)
+                .build();
+    }
 
-    public static final LocalDateTime ITEM_REQUEST_CREATED = LocalDateTime.of(
-            LocalDate.of(2023, Month.JULY, 25),
-            LocalTime.of(12, 0)
-    );
+    public static BookingRequest getBookingRequest(Long itemId, Long bookerId) {
+        return BookingRequest.builder()
+                .id(BOOKING_ID)
+                .start(BOOKING_REQUEST_START)
+                .end(BOOKING_REQUEST_END)
+                .itemId(itemId)
+                .bookerId(bookerId)
+                .status(BookingStatus.APPROVED)
+                .build();
+    }
 
-    public static List<CommentResponse> getCommentResponseList() {
+     public static List<CommentResponse> getCommentResponseList() {
         return List.of(
                 CommentResponse.builder().id(1L).build(),
                 CommentResponse.builder().id(2L).build()
@@ -122,6 +152,23 @@ public class TestDataProvider {
                 .build();
     }
 
+    public static ItemDto getItemDtoForUpdate(boolean available) {
+         return ItemDto.builder()
+                 .description("New Description")
+                 .name("New Name")
+                 .available(available)
+                 .build();
+    }
+
+    public static ItemDto getItemDtoForCreate(Long requestId) {
+        return ItemDto.builder()
+                .description("Description")
+                .name("Name")
+                .available(true)
+                .requestId(requestId)
+                .build();
+    }
+
     public static ItemDto getItemDtoRequest(Long requestId) {
         return ItemDto.builder()
                 .ownerId(OWNER_ID)
@@ -141,6 +188,15 @@ public class TestDataProvider {
 
     }
 
+    public static Item getItemNoBookingsNoRequest(Long id, boolean available, User owner) {
+         return new Item()
+                 .setId(id)
+                 .setName("Item Name")
+                 .setDescription("Item Description")
+                 .setAvailable(available)
+                 .setOwner(owner);
+    }
+
     public static Item getAvailableItemWithoutBookings() {
         return new Item()
                 .setId(ITEM_ID)
@@ -151,11 +207,28 @@ public class TestDataProvider {
                 .setRequest(getItemRequest());
     }
 
+    public static Item getTransientAvailableItemNoBookingsNoRequest(User owner) {
+        return new Item()
+                .setOwner(owner)
+                .setName("Item Name")
+                .setDescription("Item Description")
+                .setAvailable(true);
+    }
+
     public static Booking getNextBooking() {
         Booking booking = getBooking();
         booking.setStart(booking.getStart().plusDays(10));
         booking.setStatus(BookingStatus.APPROVED);
         return booking;
+    }
+
+    public static Booking getBookingBeforeSave(User booker, Item item) {
+         return new Booking()
+                 .setStart(BOOKING_START)
+                 .setEnd(BOOKING_END)
+                 .setItem(item)
+                 .setBooker(booker)
+                 .setStatus(BookingStatus.APPROVED);
     }
 
     public static Booking getBooking() {
@@ -204,13 +277,6 @@ public class TestDataProvider {
                 .id(id)
                 .name("user")
                 .email("user@user.com")
-                .build();
-    }
-
-    public static UserDto expectedUserAfterUpdate() {
-        return UserDto.builder()
-                .email("update@user.com")
-                .name("update")
                 .build();
     }
 

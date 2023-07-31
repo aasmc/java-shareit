@@ -17,7 +17,7 @@ public class BookingDataValidatorImpl implements BookingDataValidator {
     private final UserRepository userRepository;
 
     @Override
-    public void throwIfNotOwnerOfBooking(Long ownerId, Long bookingId, Booking booking) {
+    public void throwIfNotOwnerOfBookedItem(Long ownerId, Long bookingId, Booking booking) {
         if (!booking.getItem().getOwner().getId().equals(ownerId)) {
             String msg = String.format("Status of booking with ID=%d cannot be updated because " +
                     "user with ID=%d is not the owner of item.", bookingId, ownerId);
