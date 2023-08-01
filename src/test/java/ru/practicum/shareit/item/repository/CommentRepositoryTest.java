@@ -57,7 +57,7 @@ class CommentRepositoryTest extends BaseJpaTest {
     }
 
     private ItemRequest getAndSaveItemRequest(User requestor) {
-        ItemRequest itemRequest = getItemRequest();
+        ItemRequest itemRequest = getDefaultItemRequest();
         itemRequest.setId(null);
         itemRequest.setRequestor(requestor);
         return em.persist(itemRequest);

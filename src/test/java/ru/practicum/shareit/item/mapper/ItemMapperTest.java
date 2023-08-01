@@ -36,7 +36,7 @@ class ItemMapperTest {
     void mapToDomain_whenAllCorrect_mapsCorrectly() {
         ItemDto dto = getItemDtoRequest(ITEM_REQUEST_ID);
         User user = getMockUser(dto.getOwnerId());
-        ItemRequest request = getItemRequest();
+        ItemRequest request = getDefaultItemRequest();
         Mockito
                 .when(userRepository.findById(dto.getOwnerId())).thenReturn(Optional.of(user));
         Mockito

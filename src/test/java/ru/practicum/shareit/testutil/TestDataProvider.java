@@ -12,6 +12,9 @@ import ru.practicum.shareit.item.dto.CommentResponse;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.request.dto.ItemRequestDto;
+import ru.practicum.shareit.request.dto.ItemRequestResponse;
+import ru.practicum.shareit.request.dto.ItemResponse;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
@@ -73,7 +76,7 @@ public class TestDataProvider {
                 .build();
     }
 
-     public static List<CommentResponse> getCommentResponseList() {
+    public static List<CommentResponse> getCommentResponseList() {
         return List.of(
                 CommentResponse.builder().id(1L).build(),
                 CommentResponse.builder().id(2L).build()
@@ -84,7 +87,7 @@ public class TestDataProvider {
         return Item.builder()
                 .id(ITEM_ID)
                 .owner(getMockUser(dto.getOwnerId()))
-                .request(getItemRequest())
+                .request(getDefaultItemRequest())
                 .description(dto.getDescription())
                 .name(dto.getName())
                 .available(true)
@@ -153,11 +156,11 @@ public class TestDataProvider {
     }
 
     public static ItemDto getItemDtoForUpdate(boolean available) {
-         return ItemDto.builder()
-                 .description("New Description")
-                 .name("New Name")
-                 .available(available)
-                 .build();
+        return ItemDto.builder()
+                .description("New Description")
+                .name("New Name")
+                .available(available)
+                .build();
     }
 
     public static ItemDto getItemDtoForCreate(Long requestId) {
@@ -179,7 +182,57 @@ public class TestDataProvider {
                 .build();
     }
 
-    public static ItemRequest getItemRequest() {
+    public static ItemRequest getItemRequest(Long id,
+                                             User requestor) {
+        return new ItemRequest()
+                .setId(id)
+                .setRequestor(requestor)
+                .setDescription("Description")
+                .setCreated(ITEM_REQUEST_CREATED);
+    }
+
+    public static ItemRequest getItemRequestFromDto(ItemRequestDto dto,
+                                                    User requestor) {
+        return new ItemRequest()
+                .setRequestor(requestor)
+                .setDescription(dto.getDescription());
+    }
+
+    public static ItemRequestResponse getItemRequestResponse(ItemRequest domain,
+                                                             List<ItemResponse> items) {
+        return ItemRequestResponse.builder()
+                .id(domain.getId())
+                .description(domain.getDescription())
+                .created(domain.getCreated())
+                .items(items)
+                .build();
+    }
+
+    public static ItemResponse getItemResponseFromItem(Item item, Long requestId) {
+        return ItemResponse.builder()
+                .id(item.getId())
+                .name(item.getName())
+                .available(item.getAvailable())
+                .description(item.getDescription())
+                .requestId(requestId)
+                .build();
+    }
+
+    public static Item getItemWithItemRequest(Long id,
+                                              ItemRequest req,
+                                              User owner,
+                                              boolean available) {
+        return Item.builder()
+                .request(req)
+                .id(id)
+                .owner(owner)
+                .name("Item Name")
+                .description("Item Description")
+                .available(available)
+                .build();
+    }
+
+    public static ItemRequest getDefaultItemRequest() {
         return new ItemRequest()
                 .setId(ITEM_REQUEST_ID)
                 .setDescription("Description")
@@ -189,12 +242,12 @@ public class TestDataProvider {
     }
 
     public static Item getItemNoBookingsNoRequest(Long id, boolean available, User owner) {
-         return new Item()
-                 .setId(id)
-                 .setName("Item Name")
-                 .setDescription("Item Description")
-                 .setAvailable(available)
-                 .setOwner(owner);
+        return new Item()
+                .setId(id)
+                .setName("Item Name")
+                .setDescription("Item Description")
+                .setAvailable(available)
+                .setOwner(owner);
     }
 
     public static Item getAvailableItemWithoutBookings() {
@@ -204,7 +257,7 @@ public class TestDataProvider {
                 .setName("Item Name")
                 .setDescription("Item Description")
                 .setAvailable(true)
-                .setRequest(getItemRequest());
+                .setRequest(getDefaultItemRequest());
     }
 
     public static Item getTransientAvailableItemNoBookingsNoRequest(User owner) {
@@ -212,6 +265,15 @@ public class TestDataProvider {
                 .setOwner(owner)
                 .setName("Item Name")
                 .setDescription("Item Description")
+                .setAvailable(true);
+    }
+
+    public static Item getTransientAvailableItemNoBookings(User owner, ItemRequest request) {
+        return new Item()
+                .setOwner(owner)
+                .setName("Item Name")
+                .setDescription("Item Description")
+                .setRequest(request)
                 .setAvailable(true);
     }
 
@@ -223,12 +285,12 @@ public class TestDataProvider {
     }
 
     public static Booking getBookingBeforeSave(User booker, Item item) {
-         return new Booking()
-                 .setStart(BOOKING_START)
-                 .setEnd(BOOKING_END)
-                 .setItem(item)
-                 .setBooker(booker)
-                 .setStatus(BookingStatus.APPROVED);
+        return new Booking()
+                .setStart(BOOKING_START)
+                .setEnd(BOOKING_END)
+                .setItem(item)
+                .setBooker(booker)
+                .setStatus(BookingStatus.APPROVED);
     }
 
     public static Booking getBooking() {
@@ -280,4 +342,10 @@ public class TestDataProvider {
                 .build();
     }
 
+    public static ItemRequestDto getitemRequestDto(Long requestorId) {
+        return ItemRequestDto.builder()
+                .requestorId(requestorId)
+                .description("Item Description")
+                .build();
+    }
 }
