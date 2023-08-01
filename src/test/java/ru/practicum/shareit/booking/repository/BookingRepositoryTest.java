@@ -17,8 +17,10 @@ import java.util.List;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static ru.practicum.shareit.booking.model.BookingStatus.APPROVED;
 import static ru.practicum.shareit.booking.model.BookingStatus.CANCELED;
-import static ru.practicum.shareit.testutil.TestConstants.*;
-import static ru.practicum.shareit.testutil.TestDataProvider.*;
+import static ru.practicum.shareit.testutil.TestConstants.BOOKING_END;
+import static ru.practicum.shareit.testutil.TestConstants.BOOKING_START;
+import static ru.practicum.shareit.testutil.TestDataProvider.getMockUser;
+import static ru.practicum.shareit.testutil.TestDataProvider.getTransientAvailableItemNoBookingsNoRequest;
 
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 class BookingRepositoryTest extends BaseJpaTest {

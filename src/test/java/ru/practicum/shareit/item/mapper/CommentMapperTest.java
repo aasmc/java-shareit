@@ -18,7 +18,7 @@ import ru.practicum.shareit.user.repository.UserRepository;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static ru.practicum.shareit.testutil.TestConstants.*;
 import static ru.practicum.shareit.testutil.TestDataProvider.*;
 

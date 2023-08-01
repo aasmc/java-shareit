@@ -17,8 +17,8 @@ import ru.practicum.shareit.user.model.User;
 import java.util.*;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static ru.practicum.shareit.testutil.TestConstants.OWNER_ID;
 import static ru.practicum.shareit.testutil.TestDataProvider.*;
-import static ru.practicum.shareit.testutil.TestConstants.*;
 
 
 @ExtendWith(MockitoExtension.class)
