@@ -12,6 +12,7 @@ import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.error.ServiceException;
 import ru.practicum.shareit.util.OffsetBasedPageRequest;
 
+import javax.annotation.PostConstruct;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +32,6 @@ public class UserBookingsProcessorImpl implements UserBookingsProcessor {
 
     public UserBookingsProcessorImpl(BookingRepository bookingRepository) {
         this.bookingRepository = bookingRepository;
-        initProcessors();
     }
 
     @Override
@@ -66,6 +66,7 @@ public class UserBookingsProcessorImpl implements UserBookingsProcessor {
                 .build();
     }
 
+    @PostConstruct
     private void initProcessors() {
         stateToBookerProcessor = Map.of(
                 ALL, params -> bookingRepository.findAllByBookerIdOrderByStartDesc(
