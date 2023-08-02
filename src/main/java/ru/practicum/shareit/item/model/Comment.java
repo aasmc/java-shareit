@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item.model;
 
 import lombok.*;
+import lombok.experimental.Accessors;
 import org.springframework.format.annotation.DateTimeFormat;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.util.DateProcessor;
@@ -16,6 +17,7 @@ import java.time.LocalDateTime;
 @ToString
 @Entity
 @Table(name = "comments")
+@Accessors(chain = true)
 public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

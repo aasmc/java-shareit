@@ -6,6 +6,8 @@ import org.springframework.stereotype.Component;
 import ru.practicum.shareit.error.ServiceException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.request.model.ItemRequest;
+import ru.practicum.shareit.request.repository.ItemRequestRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 import ru.practicum.shareit.util.Mapper;
@@ -15,6 +17,7 @@ import ru.practicum.shareit.util.Mapper;
 public class ItemMapper implements Mapper<Item, ItemDto, ItemDto> {
 
     private final UserRepository userRepository;
+    private final ItemRequestRepository itemRequestRepository;
 
     @Override
     public ItemDto mapToDto(Item item) {
@@ -35,14 +38,21 @@ public class ItemMapper implements Mapper<Item, ItemDto, ItemDto> {
                     String msg = String.format("User with ID=%d not found.", itemDto.getOwnerId());
                     return new ServiceException(HttpStatus.NOT_FOUND.value(), msg);
                 });
-
+        ItemRequest itemRequest = null;
+        if (itemDto.getRequestId() != null) {
+            itemRequest = itemRequestRepository.findById(itemDto.getRequestId())
+                    .orElseThrow(() -> {
+                        String msg = String.format("Item with ID=%d not found.", itemDto.getRequestId());
+                        return new ServiceException(HttpStatus.NOT_FOUND.value(), msg);
+                    });
+        }
         return Item.builder()
                 .id(itemDto.getId())
                 .name(itemDto.getName())
                 .description(itemDto.getDescription())
                 .owner(owner)
                 .available(itemDto.getAvailable())
-                .request(null) // TODO fix, after implementing ItemRequest logic
+                .request(itemRequest)
                 .build();
     }
 }

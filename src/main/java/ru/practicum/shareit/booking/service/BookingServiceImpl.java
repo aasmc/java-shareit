@@ -12,7 +12,6 @@ import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.error.ServiceException;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,6 +25,7 @@ public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRepository;
     private final BookingMapper mapper;
     private final BookingDataValidator bookingDataValidator;
+    private final UserBookingsProcessor userBookingsProcessor;
 
     @Override
     public BookingResponse createBooking(BookingRequest dto) {
@@ -40,7 +40,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public BookingResponse updateApproved(Long ownerId, Long bookingId, boolean approved) {
         Booking booking = findBookingByIdOrThrow(bookingId);
-        bookingDataValidator.throwIfNotOwnerOfBooking(ownerId, bookingId, booking);
+        bookingDataValidator.throwIfNotOwnerOfBookedItem(ownerId, bookingId, booking);
         if (approved) {
             bookingDataValidator.throwIfBookingAlreadyApproved(ownerId, booking);
             booking.setStatus(APPROVED);
@@ -69,65 +69,17 @@ public class BookingServiceImpl implements BookingService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<BookingResponse> getAllBookingsOfUser(Long bookerId, BookingStateDto state) {
+    public List<BookingResponse> getAllBookingsOfUser(Long bookerId, BookingStateDto state, int from, int size) {
         bookingDataValidator.throwIfUserNotExists(bookerId);
-        List<Booking> bookings;
-        LocalDateTime now = LocalDateTime.now();
-        switch (state) {
-            case ALL:
-                bookings = bookingRepository.findAllByBookerIdOrderByStartDesc(bookerId);
-                break;
-            case CURRENT:
-                bookings = bookingRepository.findAllByBookerIdAndStartBeforeAndEndAfterOrderByStartDesc(bookerId, now, now);
-                break;
-            case PAST:
-                bookings = bookingRepository.findAllByBookerIdAndEndBeforeOrderByStartDesc(bookerId, now);
-                break;
-            case FUTURE:
-                bookings = bookingRepository.findAllByBookerIdAndStartAfterOrderByStartDesc(bookerId, now);
-                break;
-            case WAITING:
-                bookings = bookingRepository.findAllByBookerIdAndStatusOrderByStartDesc(bookerId, WAITING);
-                break;
-            case REJECTED:
-                bookings = bookingRepository.findAllByBookerIdAndStatusOrderByStartDesc(bookerId, REJECTED);
-                break;
-            default:
-                String msg = String.format("Unknown state: %s", state);
-                throw new ServiceException(HttpStatus.BAD_REQUEST.value(), msg);
-        }
+        List<Booking> bookings = userBookingsProcessor.getAllBookingsOfUser(false, bookerId, state, from, size);
         return convertResponse(bookings);
     }
 
     @Transactional(readOnly = true)
     @Override
-    public List<BookingResponse> getAllBookingsOfOwner(Long ownerId, BookingStateDto state) {
+    public List<BookingResponse> getAllBookingsOfOwner(Long ownerId, BookingStateDto state, int from, int size) {
         bookingDataValidator.throwIfUserNotExists(ownerId);
-        List<Booking> bookings;
-        LocalDateTime now = LocalDateTime.now();
-        switch (state) {
-            case ALL:
-                bookings = bookingRepository.findAllByItemOwnerIdOrderByStartDesc(ownerId);
-                break;
-            case CURRENT:
-                bookings = bookingRepository.findAllByItemOwnerIdAndStartBeforeAndEndAfterOrderByStartDesc(ownerId, now, now);
-                break;
-            case PAST:
-                bookings = bookingRepository.findAllByItemOwnerIdAndEndBeforeOrderByStartDesc(ownerId, now);
-                break;
-            case FUTURE:
-                bookings = bookingRepository.findAllByItemOwnerIdAndStartAfterOrderByStartDesc(ownerId, now);
-                break;
-            case WAITING:
-                bookings = bookingRepository.findAllByItemOwnerIdAndStatusOrderByStartDesc(ownerId, WAITING);
-                break;
-            case REJECTED:
-                bookings = bookingRepository.findAllByItemOwnerIdAndStatusOrderByStartDesc(ownerId, REJECTED);
-                break;
-            default:
-                String msg = String.format("Unknown state: %s", state);
-                throw new ServiceException(HttpStatus.BAD_REQUEST.value(), msg);
-        }
+        List<Booking> bookings = userBookingsProcessor.getAllBookingsOfUser(true, ownerId, state, from, size);
         return convertResponse(bookings);
     }
 

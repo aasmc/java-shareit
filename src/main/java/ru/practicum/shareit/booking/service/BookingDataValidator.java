@@ -4,7 +4,7 @@ import ru.practicum.shareit.booking.model.Booking;
 
 public interface BookingDataValidator {
 
-    void throwIfNotOwnerOfBooking(Long ownerId, Long bookingId, Booking booking);
+    void throwIfNotOwnerOfBookedItem(Long ownerId, Long bookingId, Booking booking);
 
     void throwIfItemNotAvailable(Long itemId, Booking booking);
 

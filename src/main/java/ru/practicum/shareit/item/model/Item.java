@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item.model;
 
 import lombok.*;
+import lombok.experimental.Accessors;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.model.User;
@@ -17,6 +18,7 @@ import java.util.List;
 @ToString
 @Entity
 @Table(name = "items")
+@Accessors(chain = true)
 public class Item {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

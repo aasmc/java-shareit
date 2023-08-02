@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +16,7 @@ import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.repository.UserRepository;
+import ru.practicum.shareit.util.OffsetBasedPageRequest;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -64,8 +66,9 @@ public class ItemServiceImpl implements ItemService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<ItemDto> getItemsForUser(long userId) {
-        Map<Long, Item> idToItem = getItemsMapFetchedWithBookings(userId);
+    public List<ItemDto> getItemsForUser(long userId, int from, int size) {
+        Pageable pageable = new OffsetBasedPageRequest(from, size);
+        Map<Long, Item> idToItem = getItemsMapFetchedWithBookings(userId, pageable);
         Map<Long, List<CommentResponse>> itemIdToComments =
                 commentService.getItemIdToComments(idToItem.keySet());
         return createItemDtos(idToItem, itemIdToComments);
@@ -73,12 +76,12 @@ public class ItemServiceImpl implements ItemService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<ItemDto> searchAvailableItems(String query) {
+    public List<ItemDto> searchAvailableItems(String query, int from, int size) {
         if (ObjectUtils.isEmpty(query)) {
             return Collections.emptyList();
         }
-        List<Item> items = itemRepository.searchAllItemFetchOwnerByQuery(query);
-
+        Pageable pageable = new OffsetBasedPageRequest(from, size);
+        List<Item> items = itemRepository.searchAllAvailableItemsFetchOwnerByQuery(query, pageable);
         return items
                 .stream()
                 .map(this::toItemDto)
@@ -154,12 +157,14 @@ public class ItemServiceImpl implements ItemService {
     }
 
     private ItemDto toItemDto(Item item) {
+
         return ItemDto.builder()
                 .id(item.getId())
                 .name(item.getName())
                 .description(item.getDescription())
                 .available(item.getAvailable())
                 .ownerId(item.getOwner().getId())
+                .requestId(item.getRequest() == null ? null : item.getRequest().getId())
                 .build();
     }
 
@@ -221,8 +226,8 @@ public class ItemServiceImpl implements ItemService {
         }
     }
 
-    private Map<Long, Item> getItemsMapFetchedWithBookings(long userId) {
-        return itemRepository.findAllByOwnerIdFetchBookings(userId)
+    private Map<Long, Item> getItemsMapFetchedWithBookings(long userId, Pageable pageable) {
+        return itemRepository.findAllByOwnerIdFetchBookings(userId, pageable)
                 .stream()
                 .collect(Collectors.toMap(Item::getId, Function.identity()));
     }
