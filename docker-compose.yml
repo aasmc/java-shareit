@@ -1,4 +1,4 @@
-version: '3.9'
+version: '3.8'
 services:
   postgres:
     image: postgres:15.3
@@ -16,3 +16,24 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+  server:
+    container_name: "shareit-server"
+    build: ./server
+    image: shareit-server
+    ports:
+      - "9090:9090"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/shareit
+  gateway:
+    container_name: "shareit-gateway"
+    build: ./gateway
+    image: shareit-gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      - server
+    environment:
+      - SHAREIT_SERVER_URL=http://server:9090
