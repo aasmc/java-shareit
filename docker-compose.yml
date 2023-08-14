@@ -18,7 +18,7 @@ services:
       retries: 5
   server:
     container_name: "shareit-server"
-    build: ./server
+    build: server
     image: shareit-server
     ports:
       - "9090:9090"
@@ -29,7 +29,7 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/shareit
   gateway:
     container_name: "shareit-gateway"
-    build: ./gateway
+    build: gateway
     image: shareit-gateway
     ports:
       - "8080:8080"
